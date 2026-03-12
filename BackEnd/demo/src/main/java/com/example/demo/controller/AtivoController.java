@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Ativo;
-import com.example.demo.service.AtivoService;
+import com.example.demo.service.ativoService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -10,9 +12,9 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class AtivoController {
 
-    private final AtivoService service;
+    private final ativoService service;
 
-    public AtivoController(AtivoService service) {
+    public AtivoController(ativoService service) {
         this.service = service;
     }
 
@@ -32,5 +34,10 @@ public class AtivoController {
     public Ativo atualizar(@PathVariable Long id, @RequestBody Ativo ativo) {
         ativo.setId(id);
         return service.salvar(ativo);
+    }
+
+    @GetMapping("/cotacao/{ticker}")
+    public ResponseEntity<?> getCotacao(@PathVariable String ticker) {
+        return ResponseEntity.ok(service.buscarCotacao(ticker));
     }
 }

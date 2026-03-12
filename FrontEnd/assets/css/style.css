@@ -178,3 +178,57 @@ cursor:pointer;
 transition:0.3s;
 }
 
+.empty-wallet{
+padding:40px;
+text-align:center;
+background:#f5f7fa;
+border-radius:10px;
+border:2px dashed #d0d6e0;
+color:#666;
+grid-column:1/-1;
+}
+
+.empty-wallet h3{
+margin-bottom:10px;
+}
+
+/* páginas */
+        .page{
+        display:none;
+        }
+
+        .page.active{
+        display:block;
+        }
+
+/* layout padrão */
+.container{
+    display:flex;
+    min-height:100vh;
+}
+
+/* RESPONSIVO */
+@media (max-width: 900px){
+
+    .container{
+        flex-direction:column;
+    }
+
+    .sidebar{
+        width:100%;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:10px;
+    }
+
+    .sidebar nav{
+        display:flex;
+        gap:15px;
+    }
+
+    .cards{
+        flex-direction:column;
+    }
+
+}
