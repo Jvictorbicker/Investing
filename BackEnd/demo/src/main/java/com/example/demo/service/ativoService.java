@@ -22,14 +22,22 @@ public class ativoService {
         this.repo = repo;
     }
 
-    public Object buscarCotacao(String ticker) {
+    public Object buscarCotacao(String tickers) {
         return restClient.get()
-                .uri("https://brapi.dev/api/quote/{ticker}?token={token}", ticker, brapiToken)
+                .uri("https://brapi.dev/api/quote/{tickers}?token={token}", tickers, brapiToken)
                 .retrieve()
                 .body(Object.class);
     }
 
-    public List<Ativo> listar() { return repo.findAll(); }
-    public Ativo salvar(Ativo a) { return repo.save(a); }
-    public void deletar(Long id) { repo.deleteById(id); }
+    public List<Ativo> listar() {
+        return repo.findAll();
+    }
+
+    public Ativo salvar(Ativo a) {
+        return repo.save(a);
+    }
+
+    public void deletar(Long id) {
+        repo.deleteById(id);
+    }
 }
