@@ -17,13 +17,16 @@ public class AtivoController {
     }
 
     @GetMapping
-    public List<Ativo> listar() { return service.listar(); }
+    public List<Ativo> listar() {
+        return service.listar(); }
 
     @PostMapping
-    public Ativo salvar(@RequestBody Ativo ativo) { return service.salvar(ativo); }
+    public Ativo salvar(@RequestBody Ativo ativo) {
+        return service.salvar(ativo); }
 
     @DeleteMapping("/{id}")
-    public void deletar(@PathVariable Long id) { service.deletar(id); }
+    public void deletar(@PathVariable Long id) {
+        service.deletar(id); }
 
     @PutMapping("/{id}")
     public Ativo atualizar(@PathVariable Long id, @RequestBody Ativo ativo) {
