@@ -1,4 +1,3 @@
-const BRAPI_TOKEN = "chyuDjzoytFDSTbk8SbEYY";
 fetch(`http://localhost:8080/api/ativos/cotacao/${ticker}`)
 
 // ─── Carregar e renderizar os cards ───────────────────────────────────────────
