@@ -1,20 +1,24 @@
-fetch(`http://localhost:8080/api/ativos/cotacao/${ticker}`)
+const API_BASE = "http://localhost:8080/api/ativos";
 
 // ─── Carregar e renderizar os cards ───────────────────────────────────────────
 async function carregarAtivos() {
     const ativos = await fetch(API_BASE).then(r => r.json());
 
     const tickers = ativos.map(a => a.ticker).join(",");
-    const precos = await fetch(
-        `https://brapi.dev/api/quote/${tickers}?token=${BRAPI_TOKEN}`
-    ).then(r => r.json());
+    const precos = await fetch(`http://localhost:8080/api/ativos/cotacoes?tickers=${tickers}`)
+        .then(r => r.json());
+
+    const respostas = await fetch(`http://localhost:8080/api/ativos/cotacoes?tickers=${tickers}`)
+        .then(r => r.json());
 
     const precoMap = {};
-    precos.results?.forEach(p => {
-        precoMap[p.symbol] = {
-            preco: p.regularMarketPrice,
-            nome: p.longName || p.shortName || p.symbol
-        };
+    respostas.forEach(resposta => {
+        resposta.results?.forEach(p => {
+            precoMap[p.symbol] = {
+                preco: p.regularMarketPrice,
+                nome: p.longName || p.shortName || p.symbol
+            };
+        });
     });
 
     const container = document.querySelector(".cards");
@@ -32,22 +36,23 @@ async function carregarAtivos() {
         const subtotal = preco * ativo.quantidade;
         total += subtotal;
 
-        const card = document.createElement("div");
-        card.classList.add("card");
-        card.dataset.id = ativo.id;
-        card.innerHTML = `
-            <h3>${ativo.ticker}</h3>
-            <small>${info.nome || ""}</small>
-            <p>${ativo.quantidade} unid.</p>
-            <strong>R$ ${preco.toFixed(2)}</strong>
-            <span>Total: R$ ${subtotal.toFixed(2)}</span>
-            <div class="btn-group">
-                <button onclick="comprar(${ativo.id})">Comprar</button>
-                <button onclick="vender(${ativo.id})">Vender</button>
-            </div>
-        `;
-        container.insertBefore(card, addCard);
-    });
+            const card = document.createElement("div");
+            card.classList.add("card");
+            card.dataset.id = ativo.id;
+
+            card.innerHTML = `
+                <h3>${ativo.ticker}</h3>
+                <small>${info.nome || ""}</small>
+                <p>${ativo.quantidade} unid.</p>
+                <strong>R$ ${preco.toFixed(2)}</strong>
+                <span>Total: R$ ${subtotal.toFixed(2)}</span>
+                <div class="btn-group">
+                    <button onclick="comprar(${ativo.id})">Comprar</button>
+                    <button onclick="vender(${ativo.id})">Vender</button>
+                </div>
+            `;
+            container.insertBefore(card, addCard);
+        });
 
     // Atualiza total geral
     document.querySelector(".stat-card h2").textContent =
