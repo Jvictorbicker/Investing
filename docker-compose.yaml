@@ -1,0 +1,34 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres_investing
+    environment:
+      POSTGRES_DB: investing_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: investing_api
+    ports:
+      - "5000:8080"
+    environment:
+      - ConnectionStrings__Default=Host=postgres;Port=5432;Database=investing_db;Username=postgres;Password=postgres
+      - Brapi__Token=YOUR_TOKEN_HERE
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

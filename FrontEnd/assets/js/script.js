@@ -1,14 +1,14 @@
-const API_BASE = "http://localhost:8080/api/ativos";
+const API_BASE = "http://localhost:5227/api/ativos";
 
 // ─── Carregar e renderizar os cards ───────────────────────────────────────────
 async function carregarAtivos() {
     const ativos = await fetch(API_BASE).then(r => r.json());
 
     const tickers = ativos.map(a => a.ticker).join(",");
-    const precos = await fetch(`http://localhost:8080/api/ativos/cotacoes?tickers=${tickers}`)
+    const precos = await fetch(`http://localhost:5000/api/ativos/cotacoes?tickers=${tickers}`)
         .then(r => r.json());
 
-    const respostas = await fetch(`http://localhost:8080/api/ativos/cotacoes?tickers=${tickers}`)
+    const respostas = await fetch(`http://localhost:5000/api/ativos/cotacoes?tickers=${tickers}`)
         .then(r => r.json());
 
     const precoMap = {};
