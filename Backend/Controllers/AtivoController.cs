@@ -40,7 +40,7 @@ public class AtivosController : ControllerBase
     [HttpGet("cotacoes")]
     public async Task<IActionResult> Cotacoes([FromQuery] string tickers)
     {
-        var resultados = new List<object?>();
+        var resultados = new List<BrapiResponse?>();
 
         foreach (var ticker in tickers.Split(','))
         {
@@ -57,4 +57,8 @@ public class AtivosController : ControllerBase
 
         return Ok(resultados);
     }
+
+    [HttpGet("comparativo")]
+    public async Task<IActionResult> Comparativo() =>
+        Ok(await _service.ListarComComparativoAsync());
 }

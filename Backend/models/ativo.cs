@@ -10,7 +10,9 @@ public class Ativo
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; set; }
 
-    public string Ticker { get; set; } = string.Empty;  // ex: PETR4
+    public string Ticker { get; set; } = string.Empty; 
+    
+    public decimal PrecoCompra {get; set;} // ex: PETR4
 
     public int Quantidade { get; set; }  // ex: 2
 }
