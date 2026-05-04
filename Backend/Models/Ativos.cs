@@ -1,0 +1,24 @@
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AtivoApi.Models;
+
+[Table("ativos")]
+public class Ativo
+{
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public long Id { get; set; }
+
+    public string Ticker { get; set; } = string.Empty;
+
+    public decimal PrecoCompra { get; set; }
+
+    public int Quantidade { get; set; }
+
+    // FK para a carteira
+    public long CarteiraId { get; set; }
+
+    [ForeignKey("CarteiraId")]
+    public Carteira? Carteira { get; set; }
+}

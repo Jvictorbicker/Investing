@@ -261,3 +261,76 @@ margin-bottom:10px;
     }
 
 }
+
+/* SIDEBAR USER */
+.sidebar {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-user {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid #e6e6e6;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebar-user span {
+  font-size: 13px;
+  color: #555;
+  font-weight: 500;
+}
+
+.sidebar-user button {
+  background: none;
+  border: 1px solid #e6e6e6;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 13px;
+  color: #8A05BE;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.sidebar-user button:hover {
+  background: #f3e6fa;
+}
+
+/* STATS */
+.stats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.stat-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  border: 1px solid #e6e6e6;
+}
+
+.stat-card p {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 8px;
+}
+
+.stat-card h2 {
+  font-size: 28px;
+  color: #333;
+}
+
+/* ERRO AUTH */
+.erro {
+  background: #fdecea;
+  color: #c0392b;
+  border: 1px solid #f5c6cb;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
