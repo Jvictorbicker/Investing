@@ -26,7 +26,6 @@ public class AtivoService
         _brapiToken = config["Brapi:Token"] ?? throw new InvalidOperationException("Brapi token not configured.");
     }
 
-    // Busca ou cria a carteira do usuário
     private async Task<Carteira> ObterOuCriarCarteiraAsync(string userId)
     {
         var carteira = await _context.Carteiras
@@ -50,7 +49,6 @@ public class AtivoService
         return await response.Content.ReadFromJsonAsync<BrapiResponse>();
     }
 
-    // Filtra ativos pela carteira do usuário logado
     public async Task<List<Ativo>> ListarAsync(string userId)
     {
         var carteira = await ObterOuCriarCarteiraAsync(userId);
@@ -67,19 +65,20 @@ public class AtivoService
         {
             var cotacao = await BuscarCotacaoAsync(ativo.Ticker);
             ativo.PrecoCompra = cotacao?.Results?.FirstOrDefault()?.RegularMarketPrice ?? 0;
-            ativo.CarteiraId = carteira.Id; // vincula à carteira do usuário
+            ativo.CarteiraId = carteira.Id;
+            ativo.Carteira = null;
             _context.Ativos.Add(ativo);
         }
         else
         {
-            // Garante que o ativo pertence ao usuário antes de atualizar
-            var existe = await _context.Ativos
-                .AnyAsync(a => a.Id == ativo.Id && a.CarteiraId == carteira.Id);
+            var ativoExistente = await _context.Ativos
+                .FirstOrDefaultAsync(a => a.Id == ativo.Id && a.CarteiraId == carteira.Id);
 
-            if (!existe)
+            if (ativoExistente is null)
                 throw new UnauthorizedAccessException("Ativo não pertence ao usuário.");
 
-            _context.Ativos.Update(ativo);
+            ativoExistente.Quantidade = ativo.Quantidade;
+            ativoExistente.Ticker = ativo.Ticker;
         }
 
         await _context.SaveChangesAsync();
@@ -90,7 +89,6 @@ public class AtivoService
     {
         var carteira = await ObterOuCriarCarteiraAsync(userId);
 
-        // Busca o ativo garantindo que pertence ao usuário
         var ativo = await _context.Ativos
             .FirstOrDefaultAsync(a => a.Id == id && a.CarteiraId == carteira.Id);
 
@@ -103,7 +101,7 @@ public class AtivoService
 
     public async Task<List<AtivoComparativoDto>> ListarComComparativoAsync(string userId)
     {
-        var ativos = await ListarAsync(userId); // já filtra pelo usuário
+        var ativos = await ListarAsync(userId);
         var result = new List<AtivoComparativoDto>();
 
         foreach (var ativo in ativos)
@@ -114,7 +112,7 @@ public class AtivoService
                 var cotacao = await BuscarCotacaoAsync(ativo.Ticker);
                 precoAtual = cotacao?.Results?.FirstOrDefault()?.RegularMarketPrice ?? 0;
             }
-            catch { /* mantém 0 se falhar */ }
+            catch { }
 
             result.Add(new AtivoComparativoDto(
                 ativo,
