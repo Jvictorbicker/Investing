@@ -298,6 +298,12 @@ margin-bottom:10px;
   background: #f3e6fa;
 }
 
+.sidebar-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* STATS */
 .stats {
   flex: 1;

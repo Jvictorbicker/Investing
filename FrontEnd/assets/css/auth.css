@@ -10,7 +10,7 @@ body { background: #f4f6fb; }
   display: flex; flex-direction: column;
 }
 
-.logo { padding-bottom: 20px; font-size: 18px; color: #8A05BE; font-weight: bold; }
+.logo { padding-bottom: 20px; font-size: 24px; color: #8A05BE; font-weight: bold; }
 .divider { width: 100%; height: 1px; background: #e6e6e6; margin-bottom: 20px; }
 .sidebar-tagline { font-size: 13px; color: #aaa; margin-top: auto; }
 
@@ -54,3 +54,56 @@ body { background: #f4f6fb; }
   border-radius: 8px; padding: 10px 14px;
   font-size: 13px; margin-bottom: 16px;
 }
+
+.inv-header {
+  width: 100%;
+  background: #fff;
+  border-bottom: 1px solid #e6e6e6;
+  padding: 0 32px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.inv-logo {
+  font-size: 24px;
+  font-weight: bold;
+  color: #8A05BE;
+  letter-spacing: -0.5px;
+}
+
+.inv-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-login-h {
+  padding: 8px 20px;
+  background: transparent;
+  border: 1.5px solid #8A05BE;
+  border-radius: 8px;
+  color: #8A05BE;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+.btn-login-h:hover { background: #f3e6fa; }
+
+.btn-register-h {
+  padding: 8px 20px;
+  background: #8A05BE;
+  border: 1.5px solid #8A05BE;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+.btn-register-h:hover { background: #6a0392; }
