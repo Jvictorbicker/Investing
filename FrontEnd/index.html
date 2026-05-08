@@ -61,6 +61,56 @@
       </section>
     </section>
 
+  <!-- CONTA -->
+<section id="conta" class="page">
+  <header class="header">
+    <h1>Minha <span>Conta</span></h1>
+    <p>Gerencie suas informações pessoais</p>
+  </header>
+
+  <div class="conta-layout">
+
+    <!-- FOTO -->
+    <div class="foto-col">
+      <div class="avatar-wrap" id="avatar-wrap">
+        <span class="avatar-initials" id="avatar-initials">JS</span>
+      </div>
+      <button class="btn-foto" onclick="document.getElementById('input-foto').click()">
+        Alterar foto
+      </button>
+      <input type="file" id="input-foto" accept="image/*" style="display:none" onchange="trocarFoto(event)">
+    </div>
+
+    <!-- DADOS -->
+    <div class="dados-col">
+      <div class="form-group">
+        <label for="campo-nome">Nome completo</label>
+        <input type="text" id="campo-nome" value="Nome" placeholder="Seu nome completo" oninput="atualizarIniciais()">
+      </div>
+      <div class="form-group">
+        <label for="campo-email">E-mail</label>
+        <input type="email" id="campo-email" value="Email" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label for="campo-tel">Telefone</label>
+        <input type="tel" id="campo-tel" value="(XX) XXXXX-XXXX" placeholder="(XX) XXXXX-XXXX" oninput="mascaraTel(this)">
+      </div>
+      <div class="form-group">
+        <label for="campo-senha">Senha</label>
+        <div class="senha-row">
+          <input type="password" id="campo-senha" value="senha123" placeholder="Nova senha">
+          <button class="btn-ver" onclick="toggleSenha()" id="btn-ver">Mostrar</button>
+        </div>
+      </div>
+      <div class="section-divider"></div>
+      <div id="badge-sucesso" class="badge-sucesso">✓ Dados salvos com sucesso!</div>
+      <button class="btn-salvar" onclick="salvar()">Salvar alterações</button>
+    </div>
+
+  </div>
+</section>
+    
+
     <!-- RENDIMENTOS -->
     <section id="rendimentos" class="page">
       <h2>Rendimentos</h2>
@@ -73,6 +123,9 @@
       <p>Configurações do usuário.</p>
     </section>
 
+    
+
+    
   </main>
 </div>
 

@@ -13,6 +13,51 @@ async function verificarAuth() {
   return user;
 }
 
+//____ foto perfil
+function trocarFoto(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const url = URL.createObjectURL(file);
+  const wrap = document.getElementById('avatar-wrap');
+  wrap.innerHTML = '<img src="' + url + '" alt="Foto de perfil">';
+  const sidebarImg = document.getElementById('profile-pic');
+  if (sidebarImg) { sidebarImg.src = url; }
+}
+
+function atualizarIniciais() {
+  const nome = document.getElementById('campo-nome').value.trim();
+  const partes = nome.split(' ').filter(Boolean);
+  const iniciais = partes.length >= 2
+    ? (partes[0][0] + partes[partes.length - 1][0]).toUpperCase()
+    : (partes[0] ? partes[0][0].toUpperCase() : '?');
+  const el = document.getElementById('avatar-initials');
+  if (el) el.textContent = iniciais;
+  const nomeEl = document.getElementById('usuario-nome');
+  if (nomeEl) nomeEl.textContent = nome || 'Usuário';
+}
+
+function mascaraTel(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (v.length > 11) v = v.slice(0, 11);
+  if (v.length > 6) v = '(' + v.slice(0,2) + ') ' + v.slice(2,7) + '-' + v.slice(7);
+  else if (v.length > 2) v = '(' + v.slice(0,2) + ') ' + v.slice(2);
+  else if (v.length > 0) v = '(' + v;
+  el.value = v;
+}
+
+let senhaVisivel = false;
+function toggleSenha() {
+  senhaVisivel = !senhaVisivel;
+  document.getElementById('campo-senha').type = senhaVisivel ? 'text' : 'password';
+  document.getElementById('btn-ver').textContent = senhaVisivel ? 'Ocultar' : 'Mostrar';
+}
+
+function salvar() {
+  const badge = document.getElementById('badge-sucesso');
+  badge.style.display = 'block';
+  setTimeout(() => badge.style.display = 'none', 3000);
+}
+
 // ─── Logout ───────────────────────────────────────────────────────────────────
 document.getElementById("btn-logout").addEventListener("click", async () => {
   await fetch(`${API}/auth/logout`, { method: "POST", credentials: "include" });

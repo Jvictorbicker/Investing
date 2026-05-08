@@ -340,3 +340,127 @@ margin-bottom:10px;
   font-size: 13px;
   margin-bottom: 16px;
 }
+
+css/* CONTA */
+.conta-layout {
+  margin-top: 36px;
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+.foto-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.avatar-wrap {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #8A05BE;
+  background: #f3e6fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-wrap img { width: 100%; height: 100%; object-fit: cover; }
+.avatar-initials { font-size: 40px; font-weight: 500; color: #8A05BE; }
+
+.btn-foto {
+  padding: 9px 18px;
+  background: transparent;
+  border: 1.5px solid #8A05BE;
+  border-radius: 8px;
+  color: #8A05BE;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+  width: 120px;
+  text-align: center;
+}
+.btn-foto:hover { background: #f3e6fa; }
+
+.dados-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* IMPORTANTE: sobrescreve o form-group genérico dentro da conta */
+#conta .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+#conta .form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: #555;
+}
+
+#conta .form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+
+#conta .form-group input:focus { border-color: #8A05BE; }
+
+.senha-row { display: flex; gap: 10px; align-items: center; }
+.senha-row input { flex: 1; }
+
+.btn-ver {
+  padding: 10px 16px;
+  background: transparent;
+  border: 1.5px solid #8A05BE;
+  border-radius: 8px;
+  color: #8A05BE;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+  white-space: nowrap;
+}
+.btn-ver:hover { background: #f3e6fa; }
+
+.section-divider { width: 100%; height: 1px; background: #e6e6e6; }
+
+.btn-salvar {
+  padding: 13px 32px;
+  background: #8A05BE;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+  align-self: flex-end;
+}
+.btn-salvar:hover { background: #6a0392; transform: translateY(-1px); }
+
+.badge-sucesso {
+  display: none;
+  background: #eaf7f0;
+  color: #1a7a4a;
+  border: 1px solid #b8e8ce;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13px;
+}
