@@ -1,6 +1,7 @@
 const API = "http://localhost:5227/api";
 const API_ATIVOS = `${API}/ativos`;
-
+const API_PERFIL = `${API}/auth/perfil`;
+ 
 // ─── Proteção de rota ─────────────────────────────────────────────────────────
 async function verificarAuth() {
   const res = await fetch(`${API}/auth/me`, { credentials: "include" });
@@ -12,8 +13,8 @@ async function verificarAuth() {
   document.getElementById("usuario-nome").textContent = user.nome;
   return user;
 }
-
-//____ foto perfil
+ 
+// ─── Foto de perfil ───────────────────────────────────────────────────────────
 function trocarFoto(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -23,7 +24,7 @@ function trocarFoto(e) {
   const sidebarImg = document.getElementById('profile-pic');
   if (sidebarImg) { sidebarImg.src = url; }
 }
-
+ 
 function atualizarIniciais() {
   const nome = document.getElementById('campo-nome').value.trim();
   const partes = nome.split(' ').filter(Boolean);
@@ -35,7 +36,7 @@ function atualizarIniciais() {
   const nomeEl = document.getElementById('usuario-nome');
   if (nomeEl) nomeEl.textContent = nome || 'Usuário';
 }
-
+ 
 function mascaraTel(el) {
   let v = el.value.replace(/\D/g, '');
   if (v.length > 11) v = v.slice(0, 11);
@@ -44,26 +45,78 @@ function mascaraTel(el) {
   else if (v.length > 0) v = '(' + v;
   el.value = v;
 }
-
+ 
 let senhaVisivel = false;
 function toggleSenha() {
   senhaVisivel = !senhaVisivel;
   document.getElementById('campo-senha').type = senhaVisivel ? 'text' : 'password';
   document.getElementById('btn-ver').textContent = senhaVisivel ? 'Ocultar' : 'Mostrar';
 }
-
-function salvar() {
-  const badge = document.getElementById('badge-sucesso');
-  badge.style.display = 'block';
-  setTimeout(() => badge.style.display = 'none', 3000);
+ 
+// ─── Perfil: carregar ─────────────────────────────────────────────────────────
+async function carregarPerfil() {
+  const res = await fetch(API_PERFIL, { credentials: "include" });
+  if (!res.ok) return;
+ 
+  const perfil = await res.json();
+  document.getElementById("campo-nome").value  = perfil.nome     || "";
+  document.getElementById("campo-email").value = perfil.email    || "";
+  document.getElementById("campo-tel").value   = perfil.telefone || "";
+ 
+  atualizarIniciais();
 }
-
+ 
+// ─── Perfil: salvar ───────────────────────────────────────────────────────────
+async function salvar() {
+  const nome      = document.getElementById("campo-nome").value.trim();
+  const email     = document.getElementById("campo-email").value.trim();
+  const telefone  = document.getElementById("campo-tel").value.trim();
+  const novaSenha = document.getElementById("campo-senha").value;
+ 
+  let senhaAtual = null;
+  if (novaSenha) {
+    senhaAtual = prompt("Digite sua senha atual para confirmar a alteração:");
+    if (senhaAtual === null) return; // usuário cancelou
+  }
+ 
+  const btn = document.querySelector(".btn-salvar");
+  btn.disabled = true;
+  btn.textContent = "Salvando…";
+ 
+  try {
+    const res = await fetch(API_PERFIL, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ nome, email, telefone, senhaAtual, novaSenha })
+    });
+ 
+    if (res.ok) {
+      document.getElementById("usuario-nome").textContent = nome || "Usuário";
+      document.getElementById("campo-senha").value = "";
+      if (senhaVisivel) toggleSenha();
+ 
+      const badge = document.getElementById("badge-sucesso");
+      badge.style.display = "block";
+      setTimeout(() => (badge.style.display = "none"), 3000);
+    } else {
+      const erros = await res.json().catch(() => ["Erro desconhecido."]);
+      alert("Erro ao salvar:\n" + (Array.isArray(erros) ? erros.join("\n") : JSON.stringify(erros)));
+    }
+  } catch (err) {
+    alert("Falha de conexão: " + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Salvar alterações";
+  }
+}
+ 
 // ─── Logout ───────────────────────────────────────────────────────────────────
 document.getElementById("btn-logout").addEventListener("click", async () => {
   await fetch(`${API}/auth/logout`, { method: "POST", credentials: "include" });
   window.location.href = "login.html";
 });
-
+ 
 // ─── Carregar e renderizar os cards ───────────────────────────────────────────
 async function carregarAtivos() {
   const ativos = await fetch(API_ATIVOS, { credentials: "include" }).then(r => r.json());
@@ -72,10 +125,10 @@ async function carregarAtivos() {
     document.querySelectorAll(".card:not(.add-card)").forEach(c => c.remove());
     return;
   }
-
+ 
   const tickers = ativos.map(a => a.ticker).join(",");
   const respostas = await fetch(`${API_ATIVOS}/cotacoes?tickers=${tickers}`, { credentials: "include" }).then(r => r.json());
-
+ 
   const precoMap = {};
   respostas.forEach(resposta => {
     resposta?.results?.forEach(p => {
@@ -85,19 +138,19 @@ async function carregarAtivos() {
       };
     });
   });
-
+ 
   const container = document.querySelector(".cards");
   const addCard = document.querySelector(".add-card");
   container.querySelectorAll(".card:not(.add-card)").forEach(c => c.remove());
-
+ 
   let total = 0;
-
+ 
   ativos.forEach(ativo => {
     const info = precoMap[ativo.ticker] || {};
     const preco = info.preco || 0;
     const subtotal = preco * ativo.quantidade;
     total += subtotal;
-
+ 
     const card = document.createElement("div");
     card.classList.add("card");
     card.dataset.id = ativo.id;
@@ -114,53 +167,53 @@ async function carregarAtivos() {
     `;
     container.insertBefore(card, addCard);
   });
-
+ 
   document.querySelector(".stat-card h2").textContent =
     `R$ ${total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 }
-
+ 
 // ─── Adicionar ativo ──────────────────────────────────────────────────────────
 document.querySelector(".big-add").addEventListener("click", async () => {
   const ticker = prompt("Ticker do ativo (ex: PETR4):");
   if (!ticker) return;
-
+ 
   const qtdStr = prompt("Quantidade de unidades:");
   if (!qtdStr) return;
-
+ 
   const quantidade = parseInt(qtdStr);
   if (isNaN(quantidade)) return;
-
+ 
   await fetch(API_ATIVOS, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({ ticker: ticker.toUpperCase().trim(), quantidade })
   });
-
+ 
   carregarAtivos();
 });
-
+ 
 // ─── Comprar ──────────────────────────────────────────────────────────────────
 async function comprar(id) {
   const ativos = await fetch(API_ATIVOS, { credentials: "include" }).then(r => r.json());
   const ativo = ativos.find(a => a.id === id);
   ativo.quantidade += 1;
-
+ 
   await fetch(`${API_ATIVOS}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify(ativo)
   });
-
+ 
   carregarAtivos();
 }
-
+ 
 // ─── Vender ───────────────────────────────────────────────────────────────────
 async function vender(id) {
   const ativos = await fetch(API_ATIVOS, { credentials: "include" }).then(r => r.json());
   const ativo = ativos.find(a => a.id === id);
-
+ 
   if (ativo.quantidade <= 1) {
     if (!confirm("Remover ativo da carteira?")) return;
     await fetch(`${API_ATIVOS}/${id}`, { method: "DELETE", credentials: "include" });
@@ -173,10 +226,10 @@ async function vender(id) {
       body: JSON.stringify(ativo)
     });
   }
-
+ 
   carregarAtivos();
 }
-
+ 
 // ─── Navegação ────────────────────────────────────────────────────────────────
 document.querySelectorAll("nav a").forEach(link => {
   link.addEventListener("click", () => {
@@ -186,6 +239,11 @@ document.querySelectorAll("nav a").forEach(link => {
     document.getElementById(link.dataset.page).classList.add("active");
   });
 });
-
+ 
 // ─── Iniciar ──────────────────────────────────────────────────────────────────
-verificarAuth().then(user => { if (user) carregarAtivos(); });
+verificarAuth().then(user => {
+  if (user) {
+    carregarAtivos();
+    carregarPerfil();
+  }
+});
