@@ -15,15 +15,35 @@ async function verificarAuth() {
 }
  
 // ─── Foto de perfil ───────────────────────────────────────────────────────────
-function trocarFoto(e) {
+async function trocarFoto(e) {
   const file = e.target.files[0];
+  console.log('trocarFoto chamada, arquivo:', file);
   if (!file) return;
+
+  // Preview local imediato
   const url = URL.createObjectURL(file);
   const wrap = document.getElementById('avatar-wrap');
   wrap.innerHTML = '<img src="' + url + '" alt="Foto de perfil">';
   const sidebarImg = document.getElementById('profile-pic');
-  if (sidebarImg) { sidebarImg.src = url; }
+  if (sidebarImg) sidebarImg.src = url;
+
+  // Envia pro servidor
+  const formData = new FormData();
+  formData.append("foto", file);
+
+  const res = await fetch(`${API}/auth/perfil/foto`, {
+    method: "POST",
+    credentials: "include",
+    body: formData
+  });
+
 }
+
+document.getElementById('input-foto').addEventListener('change', function(e) {
+  console.log('listener change disparado, arquivos:', e.target.files);
+  e.stopPropagation();
+  trocarFoto(e);
+});
  
 function atualizarIniciais() {
   const nome = document.getElementById('campo-nome').value.trim();
@@ -62,6 +82,14 @@ async function carregarPerfil() {
   document.getElementById("campo-nome").value  = perfil.nome     || "";
   document.getElementById("campo-email").value = perfil.email    || "";
   document.getElementById("campo-tel").value   = perfil.telefone || "";
+
+  if (perfil.fotoUrl) {
+    const urlCompleta = `http://localhost:5227${perfil.fotoUrl}`;
+    document.getElementById('avatar-wrap').innerHTML =
+      `<img src="${urlCompleta}" alt="Foto de perfil">`;
+    const sidebarImg = document.getElementById('profile-pic');
+    if (sidebarImg) sidebarImg.src = urlCompleta;
+  }
  
   atualizarIniciais();
 }
@@ -76,7 +104,7 @@ async function salvar() {
   let senhaAtual = null;
   if (novaSenha) {
     senhaAtual = prompt("Digite sua senha atual para confirmar a alteração:");
-    if (senhaAtual === null) return; // usuário cancelou
+    if (senhaAtual === null) return;
   }
  
   const btn = document.querySelector(".btn-salvar");

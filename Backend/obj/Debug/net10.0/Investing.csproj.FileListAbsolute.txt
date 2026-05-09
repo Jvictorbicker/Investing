@@ -167,3 +167,4 @@ C:\Users\Victor\Desktop\Investing\backend\bin\Debug\net10.0\Microsoft.IdentityMo
 C:\Users\Victor\Desktop\Investing\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\Victor\Desktop\Investing\backend\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Victor\Desktop\Investing\backend\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Victor\Desktop\Investing\Backend\bin\Debug\net10.0\Investing.staticwebassets.runtime.json

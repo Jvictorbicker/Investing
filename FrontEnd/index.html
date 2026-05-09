@@ -75,10 +75,10 @@
       <div class="avatar-wrap" id="avatar-wrap">
         <span class="avatar-initials" id="avatar-initials">JS</span>
       </div>
-      <button class="btn-foto" onclick="document.getElementById('input-foto').click()">
-        Alterar foto
+      <button type="button" class="btn-foto" onclick="document.getElementById('input-foto').click(); event.stopPropagation()">
+      Alterar foto
       </button>
-      <input type="file" id="input-foto" accept="image/*" style="display:none" onchange="trocarFoto(event)">
+      <input type="file" id="input-foto" accept="image/*" style="display:none">
     </div>
 
     <!-- DADOS -->
@@ -117,15 +117,6 @@
       <p>Aqui aparecerão seus dividendos.</p>
     </section>
 
-    <!-- CONTA -->
-    <section id="conta" class="page">
-      <h2>Minha Conta</h2>
-      <p>Configurações do usuário.</p>
-    </section>
-
-    
-
-    
   </main>
 </div>
 

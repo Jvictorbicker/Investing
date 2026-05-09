@@ -9,7 +9,7 @@ namespace AtivoApi.Controllers;
 public record RegisterDto(string Nome, string Email, string Senha);
 public record LoginDto(string Email, string Senha);
 public record AtualizarPerfilDto(string? Nome, string? Email, string? Telefone, string? SenhaAtual, string? NovaSenha);
- 
+    
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
@@ -83,7 +83,7 @@ public class AuthController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         if (user is null) return Unauthorized();
  
-        return Ok(new { nome = user.Nome, email = user.Email, telefone = user.PhoneNumber });
+        return Ok(new { nome = user.Nome, email = user.Email, telefone = user.PhoneNumber, fotoUrl = user.FotoUrl });
     }
  
     [Authorize]
@@ -130,6 +130,34 @@ public class AuthController : ControllerBase
             return BadRequest(update.Errors.Select(e => e.Description));
  
         return Ok(new { message = "Perfil atualizado com sucesso." });
+    }
+
+    [Authorize]
+    [HttpPost("perfil/foto")]
+    public async Task<IActionResult> UploadFoto(IFormFile foto)
+    {
+        if (foto is null || foto.Length == 0)
+        return BadRequest("Nenhum arquivo enviado.");
+
+    var user = await _userManager.GetUserAsync(User);
+    if (user is null) return Unauthorized();
+
+    // Garante que a pasta existe
+    var pasta = Path.Combine("wwwroot", "avatars");
+    Directory.CreateDirectory(pasta);
+
+    // Nome único para não sobrescrever fotos de outros usuários
+    var extensao = Path.GetExtension(foto.FileName);
+    var nomeArquivo = $"{user.Id}{extensao}";
+    var caminho = Path.Combine(pasta, nomeArquivo);
+
+    using (var stream = System.IO.File.Create(caminho))
+        await foto.CopyToAsync(stream);
+
+    user.FotoUrl = $"/avatars/{nomeArquivo}";
+    await _userManager.UpdateAsync(user);
+
+    return Ok(new { fotoUrl = user.FotoUrl });
     }
 }
  
