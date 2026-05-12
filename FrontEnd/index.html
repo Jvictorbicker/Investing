@@ -113,13 +113,67 @@
 
     <!-- RENDIMENTOS -->
     <section id="rendimentos" class="page">
-      <h2>Rendimentos</h2>
-      <p>Aqui aparecerão seus dividendos.</p>
-    </section>
+ 
+  <!-- Cabeçalho -->
+  <div class="header">
+    <h1>Meus <span>Rendimentos</span></h1>
+    <p>Acompanhe o desempenho dos seus ativos em relação ao preço de compra.</p>
+  </div>
+ 
+  <!-- Estado de carregamento -->
+  <div id="loadingState" class="loading-state">
+    <div class="spinner"></div>
+    <p>Carregando seus ativos...</p>
+  </div>
+ 
+  <!-- Estado de erro -->
+  <div id="errorState" class="error-state" style="display:none;">
+    <p id="errorMsg">Erro ao carregar dados.</p>
+    <button onclick="init()">Tentar novamente</button>
+  </div>
+ 
+  <!-- Conteúdo principal (oculto até carregar) -->
+  <div id="mainContent" style="display:none;">
+ 
+    <!-- Cards de resumo -->
+    <div class="rend-stats" id="statsRow"></div>
+ 
+    <!-- Gráfico -->
+    <div class="chart-card">
+      <div class="chart-card-header">
+        <h3>Comparativo: preço de compra × valor atual</h3>
+      </div>
+ 
+      <!-- Filtros -->
+      <div class="toggle-wrap" id="toggleWrap"></div>
+ 
+      <!-- Legenda -->
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#8A05BE;"></span>Preço de compra</span>
+        <span><span class="legend-dot" style="background:#1a7a4a;"></span>Lucro</span>
+        <span><span class="legend-dot" style="background:#c0392b;"></span>Prejuízo</span>
+      </div>
+ 
+      <div class="chart-wrap">
+        <canvas id="rendChart"
+          role="img"
+          aria-label="Gráfico de barras comparando preço de compra e valor atual de cada ativo">
+          Comparativo de preço de compra versus valor atual dos ativos.
+        </canvas>
+      </div>
+    </div>
+ 
+    <!-- Lista de ativos -->
+    <div class="ativo-list" id="ativoList"></div>
+ 
+  </div>
+
+</section>
 
   </main>
 </div>
 
 <script src="assets/js/script.js"></script>
+<script src="rendimentos.js" defer></script>
 </body>
 </html>
