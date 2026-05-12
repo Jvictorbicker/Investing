@@ -15,7 +15,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-
+ 
   api:
     build:
       context: ./Backend
@@ -29,6 +29,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-
+ 
 volumes:
   postgres_data:

@@ -265,6 +265,8 @@ document.querySelectorAll("nav a").forEach(link => {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     link.classList.add("active");
     document.getElementById(link.dataset.page).classList.add("active");
+
+    if (link.dataset.page === 'rendimentos') initRendimentos();
   });
 });
  

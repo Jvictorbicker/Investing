@@ -1,26 +1,19 @@
 /* ─────────────────────────────────────────
    rendimentos.js
-   Consome a API ASP.NET Core:
-     GET /api/ativos/comparativo  → lista de ativos com cotação atual
+   DEPENDE de script.js (carregado antes):
+     - const API já declarada lá
+     - autenticação via cookie (credentials: "include")
+   
+   Estrutura do JSON retornado pela API:
+   [{ ativo: { id, ticker, precoCompra, quantidade, carteiraId }, precoAtual, variacaoAbsoluta, variacaoPercent }]
    ───────────────────────────────────────── */
 
-// ─────────────────────────────────────────
-// CONFIGURAÇÃO
-// Ajuste a BASE_URL para o endereço da sua API.
-// Em produção, use a URL real; em dev, o proxy do Vite/servidor local.
-// ─────────────────────────────────────────
-const BASE_URL = 'http://localhost:5000'; // <- altere se necessário
-
-// ─────────────────────────────────────────
-// ESTADO
-// ─────────────────────────────────────────
-let ativos      = [];   // dados vindos da API
-let modoAtivo   = 'todos';
+// ─── Estado ───────────────────────────────────────────────────────────────────
+let ativosRend  = [];
+let modoFiltro  = 'todos';
 let chartInst   = null;
 
-// ─────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function brl(val) {
   return Number(val).toLocaleString('pt-BR', {
     minimumFractionDigits: 2,
@@ -28,44 +21,55 @@ function brl(val) {
   });
 }
 
-function getToken() {
-  // Adapte para onde seu app guarda o JWT
-  // Exemplos comuns: localStorage, sessionStorage, cookie
-  return localStorage.getItem('token') ?? '';
+// Normaliza o item da API para um objeto flat — isola aqui qualquer mudança futura
+function normalizar(item) {
+  return {
+    id:          item.ativo.id,
+    ticker:      item.ativo.ticker,
+    precoCompra: item.ativo.precoCompra,
+    quantidade:  item.ativo.quantidade,
+    precoAtual:  item.precoAtual,
+    variacaoAbsoluta: item.variacaoAbsoluta,
+    variacaoPercent:  item.variacaoPercent,
+  };
 }
 
 function filtrados() {
-  return modoAtivo === 'todos'
-    ? ativos
-    : ativos.filter(a => a.ticker === modoAtivo);
+  return modoFiltro === 'todos'
+    ? ativosRend
+    : ativosRend.filter(a => a.ticker === modoFiltro);
 }
 
-// ─────────────────────────────────────────
-// API — GET /api/ativos/comparativo
-//
-// Retorno esperado (array):
-// [
-//   {
-//     "id": 1,
-//     "ticker": "PETR4",
-//     "precoCompra": 32.50,
-//     "quantidade": 100,
-//     "carteiraId": 1,
-//     "precoAtual": 38.20,        // cotação em tempo real via Brapi
-//     "empresa": "Petrobras",     // nome da empresa (opcional)
-//     "variacao": 17.54           // % variação (opcional, calculado no front se ausente)
-//   },
-//   ...
-// ]
-// ─────────────────────────────────────────
+// ─── Estados visuais ──────────────────────────────────────────────────────────
+function showLoading() {
+  document.getElementById('loadingState').style.display = 'flex';
+  document.getElementById('errorState').style.display   = 'none';
+  document.getElementById('mainContent').style.display  = 'none';
+}
+
+function showError(msg) {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display   = 'flex';
+  document.getElementById('mainContent').style.display  = 'none';
+  document.getElementById('errorMsg').textContent       = msg;
+}
+
+function showContent() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('errorState').style.display   = 'none';
+  document.getElementById('mainContent').style.display  = 'block';
+}
+
+// ─── API ──────────────────────────────────────────────────────────────────────
 async function fetchComparativo() {
-  const res = await fetch(`${BASE_URL}/api/ativos/comparativo`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${getToken()}`,
-    },
+  const res = await fetch(`${API}/ativos/comparativo`, {
+    credentials: 'include',
   });
+
+  if (res.status === 401) {
+    window.location.href = 'login.html';
+    return [];
+  }
 
   if (!res.ok) {
     const text = await res.text();
@@ -75,36 +79,12 @@ async function fetchComparativo() {
   return res.json();
 }
 
-// ─────────────────────────────────────────
-// UI — LOADING / ERRO / CONTEÚDO
-// ─────────────────────────────────────────
-function showLoading() {
-  document.getElementById('loadingState').style.display  = 'flex';
-  document.getElementById('errorState').style.display    = 'none';
-  document.getElementById('mainContent').style.display   = 'none';
-}
-
-function showError(msg) {
-  document.getElementById('loadingState').style.display  = 'none';
-  document.getElementById('errorState').style.display    = 'flex';
-  document.getElementById('mainContent').style.display   = 'none';
-  document.getElementById('errorMsg').textContent        = msg;
-}
-
-function showContent() {
-  document.getElementById('loadingState').style.display  = 'none';
-  document.getElementById('errorState').style.display    = 'none';
-  document.getElementById('mainContent').style.display   = 'block';
-}
-
-// ─────────────────────────────────────────
-// RENDER — CARDS DE RESUMO
-// ─────────────────────────────────────────
+// ─── Render: cards de resumo ──────────────────────────────────────────────────
 function renderStats() {
   let totalInvestido = 0;
   let totalAtual     = 0;
 
-  ativos.forEach(a => {
+  ativosRend.forEach(a => {
     totalInvestido += Number(a.precoCompra) * Number(a.quantidade);
     totalAtual     += Number(a.precoAtual)  * Number(a.quantidade);
   });
@@ -135,27 +115,23 @@ function renderStats() {
   `;
 }
 
-// ─────────────────────────────────────────
-// RENDER — BOTÕES DE FILTRO
-// ─────────────────────────────────────────
+// ─── Render: botões de filtro ─────────────────────────────────────────────────
 function renderToggles() {
   const opcoes = [
     { id: 'todos', label: 'Todos' },
-    ...ativos.map(a => ({ id: a.ticker, label: a.ticker })),
+    ...ativosRend.map(a => ({ id: a.ticker, label: a.ticker })),
   ];
 
   document.getElementById('toggleWrap').innerHTML = opcoes.map(o => `
     <button
-      class="toggle-btn ${modoAtivo === o.id ? 'active' : ''}"
-      onclick="filtrar('${o.id}')">
+      class="toggle-btn ${modoFiltro === o.id ? 'active' : ''}"
+      onclick="filtrarRend('${o.id}')">
       ${o.label}
     </button>
   `).join('');
 }
 
-// ─────────────────────────────────────────
-// RENDER — GRÁFICO
-// ─────────────────────────────────────────
+// ─── Render: gráfico ──────────────────────────────────────────────────────────
 function renderChart() {
   const lista   = filtrados();
   const labels  = lista.map(a => a.ticker);
@@ -217,9 +193,7 @@ function renderChart() {
   });
 }
 
-// ─────────────────────────────────────────
-// RENDER — LISTA DE ATIVOS
-// ─────────────────────────────────────────
+// ─── Render: lista de ativos ──────────────────────────────────────────────────
 function renderAtivos() {
   const lista = filtrados();
 
@@ -227,43 +201,31 @@ function renderAtivos() {
     const compra  = Number(a.precoCompra);
     const atual   = Number(a.precoAtual);
     const qtd     = Number(a.quantidade);
-    const diffPct = compra > 0
-      ? ((atual - compra) / compra * 100).toFixed(2)
-      : '0.00';
-    const pos  = atual >= compra;
-    const cls  = pos ? 'lucro' : 'prejuizo';
-    const seta = pos ? '▲' : '▼';
-    const msg  = pos
-      ? 'Você obteve lucro neste ativo'
-      : 'Você obteve prejuízo neste ativo';
-
-    // "empresa" é opcional — a API pode ou não retornar o campo
-    const nomeEmpresa = a.empresa ? `${a.empresa} · ` : '';
+    const diffPct = Number(a.variacaoPercent).toFixed(2);
+    const pos     = atual >= compra;
+    const cls     = pos ? 'lucro' : 'prejuizo';
+    const seta    = pos ? '▲' : '▼';
+    const msg     = pos ? 'Você obteve lucro neste ativo' : 'Você obteve prejuízo neste ativo';
 
     return `
       <div class="ativo-row">
         <div class="ativo-info">
           <strong>${a.ticker}</strong>
-          <small>${nomeEmpresa}${qtd} cotas</small>
+          <small>${qtd} cotas</small>
         </div>
-
         <div class="ativo-valores">
           <div class="val-col">
             <span class="val-label">Preço de compra</span>
             <span class="val-price">R$ ${compra.toFixed(2)}</span>
             <span class="val-total">Total: R$ ${brl(compra * qtd)}</span>
           </div>
-
           <div class="val-col">
             <span class="val-label">Valor atual</span>
             <span class="val-price">R$ ${atual.toFixed(2)}</span>
             <span class="val-total">Total: R$ ${brl(atual * qtd)}</span>
           </div>
-
           <div class="resultado-col">
-            <span class="badge-resultado ${cls}">
-              ${seta} ${pos ? '+' : ''}${diffPct}%
-            </span>
+            <span class="badge-resultado ${cls}">${seta} ${pos ? '+' : ''}${diffPct}%</span>
             <span class="msg-resultado ${cls}">${msg}</span>
           </div>
         </div>
@@ -272,34 +234,31 @@ function renderAtivos() {
   }).join('');
 }
 
-// ─────────────────────────────────────────
-// FILTRO (chamado pelos botões)
-// ─────────────────────────────────────────
-function filtrar(id) {
-  modoAtivo = id;
+// ─── Filtro ───────────────────────────────────────────────────────────────────
+function filtrarRend(id) {
+  modoFiltro = id;
   renderToggles();
   renderChart();
   renderAtivos();
 }
 
-// ─────────────────────────────────────────
-// INICIALIZAÇÃO
-// ─────────────────────────────────────────
-async function init() {
+// ─── Inicialização ────────────────────────────────────────────────────────────
+async function initRendimentos() {
+  if (!document.getElementById('loadingState')) return;
+
   showLoading();
 
   try {
-    // Busca os dados da API
     const dados = await fetchComparativo();
 
-    // Garante que é array e tem pelo menos um item
     if (!Array.isArray(dados) || dados.length === 0) {
       showError('Nenhum ativo encontrado na sua carteira.');
       return;
     }
 
-    ativos     = dados;
-    modoAtivo  = 'todos';
+    // Normaliza o JSON aninhado { ativo: {...}, precoAtual, ... } para flat
+    ativosRend = dados.map(normalizar);
+    modoFiltro = 'todos';
 
     showContent();
     renderStats();
@@ -308,10 +267,7 @@ async function init() {
     renderAtivos();
 
   } catch (err) {
-    console.error('[Rendimentos] Erro ao buscar comparativo:', err);
+    console.error('[Rendimentos] Erro:', err);
     showError(`Não foi possível carregar os dados: ${err.message}`);
   }
 }
-
-// Aguarda o DOM e o Chart.js carregarem antes de iniciar
-document.addEventListener('DOMContentLoaded', init);
