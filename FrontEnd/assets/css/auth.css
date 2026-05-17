@@ -1,70 +1,204 @@
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial; }
-body { background: #f4f6fb; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial;
+}
 
-.login-container { display: flex; height: 100vh; min-height: 500px; }
+body {
+  background: #f4f6fb;
+}
+
+/* =========================
+   LOGIN LAYOUT
+========================= */
+
+.login-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* =========================
+   SIDEBAR
+========================= */
 
 .login-sidebar {
-  width: 230px; background: #fff;
+  width: 230px;
+  background: #fff;
   border-right: 1px solid #e6e6e6;
   padding: 30px 20px;
-  display: flex; flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
-.logo { padding-bottom: 20px; font-size: 24px; color: #8A05BE; font-weight: bold; }
-.divider { width: 100%; height: 1px; background: #e6e6e6; margin-bottom: 20px; }
-.sidebar-tagline { font-size: 13px; color: #aaa; margin-top: auto; }
+.logo {
+  padding-bottom: 20px;
+  font-size: 24px;
+  color: #8A05BE;
+  font-weight: bold;
+}
 
-.login-main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px; }
+.divider {
+  width: 100%;
+  height: 1px;
+  background: #e6e6e6;
+  margin-bottom: 20px;
+}
+
+.sidebar-tagline {
+  font-size: 13px;
+  color: #aaa;
+  margin-top: auto;
+  line-height: 1.5;
+}
+
+/* =========================
+   MAIN CONTENT
+========================= */
+
+.login-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+}
+
+/* =========================
+   LOGIN CARD
+========================= */
 
 .login-card {
-  background: #fff; border-radius: 20px;
-  padding: 45px 40px; width: 100%; max-width: 420px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 45px 40px;
+  width: 100%;
+  max-width: 420px;
   border: 1px solid #e6e6e6;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.04);
 }
 
-.login-card h1 { font-size: 26px; color: #333; margin-bottom: 6px; }
-.login-card h1 span { color: #8A05BE; }
-.login-card > p { color: #777; font-size: 14px; margin-bottom: 32px; }
+.login-card h1 {
+  font-size: 26px;
+  color: #333;
+  margin-bottom: 6px;
+}
 
-.form-group { margin-bottom: 20px; }
-.form-group label { display: block; font-size: 13px; font-weight: 500; color: #555; margin-bottom: 7px; }
+.login-card h1 span {
+  color: #8A05BE;
+}
+
+.login-card > p {
+  color: #777;
+  font-size: 14px;
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+/* =========================
+   FORM
+========================= */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 7px;
+}
+
 .form-group input {
-  width: 100%; padding: 12px 15px;
-  border: 1px solid #e6e6e6; border-radius: 10px;
-  font-size: 14px; color: #333; outline: none;
-  transition: border-color 0.2s;
+  width: 100%;
+  padding: 14px 15px;
+  border: 1px solid #e6e6e6;
+  border-radius: 12px;
+  font-size: 14px;
+  color: #333;
+  outline: none;
+  transition: 0.2s;
+  background: #fafafa;
 }
-.form-group input:focus { border-color: #8A05BE; }
+
+.form-group input:focus {
+  border-color: #8A05BE;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(138, 5, 190, 0.08);
+}
+
+/* =========================
+   BUTTON
+========================= */
 
 .btn-login {
-  width: 100%; padding: 13px;
-  background: #8A05BE; color: white;
-  border: none; border-radius: 10px;
-  font-size: 15px; font-weight: 500;
-  cursor: pointer; transition: 0.3s;
+  width: 100%;
+  padding: 14px;
+  background: #8A05BE;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
 }
-.btn-login:hover { background: #6a0392; transform: translateY(-1px); }
 
-.signup-text { text-align: center; margin-top: 22px; font-size: 13px; color: #777; }
-.signup-text a { color: #8A05BE; text-decoration: none; font-weight: 500; }
+.btn-login:hover {
+  background: #6a0392;
+  transform: translateY(-1px);
+}
+
+/* =========================
+   SIGNUP TEXT
+========================= */
+
+.signup-text {
+  text-align: center;
+  margin-top: 22px;
+  font-size: 13px;
+  color: #777;
+  line-height: 1.5;
+}
+
+.signup-text a {
+  color: #8A05BE;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+/* =========================
+   ERROR MESSAGE
+========================= */
 
 .erro {
-  background: #fdecea; color: #c0392b;
+  background: #fdecea;
+  color: #c0392b;
   border: 1px solid #f5c6cb;
-  border-radius: 8px; padding: 10px 14px;
-  font-size: 13px; margin-bottom: 16px;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  margin-bottom: 16px;
+  line-height: 1.5;
 }
+
+/* =========================
+   HEADER
+========================= */
 
 .inv-header {
   width: 100%;
   background: #fff;
   border-bottom: 1px solid #e6e6e6;
   padding: 0 32px;
-  height: 60px;
+  min-height: 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-sizing: border-box;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .inv-logo {
@@ -78,32 +212,155 @@ body { background: #f4f6fb; }
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* =========================
+   HEADER BUTTONS
+========================= */
+
+.btn-login-h,
+.btn-register-h {
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+  text-decoration: none;
+  text-align: center;
 }
 
 .btn-login-h {
-  padding: 8px 20px;
   background: transparent;
   border: 1.5px solid #8A05BE;
-  border-radius: 8px;
   color: #8A05BE;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  text-decoration: none;
 }
-.btn-login-h:hover { background: #f3e6fa; }
+
+.btn-login-h:hover {
+  background: #f3e6fa;
+}
 
 .btn-register-h {
-  padding: 8px 20px;
   background: #8A05BE;
   border: 1.5px solid #8A05BE;
-  border-radius: 8px;
   color: #fff;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.2s;
-  text-decoration: none;
 }
-.btn-register-h:hover { background: #6a0392; }
+
+.btn-register-h:hover {
+  background: #6a0392;
+}
+
+/* =========================
+   RESPONSIVIDADE TABLET
+========================= */
+
+@media (max-width: 900px) {
+
+  .login-sidebar {
+    display: none;
+  }
+
+  .login-main {
+    padding: 30px 20px;
+  }
+
+  .login-card {
+    max-width: 100%;
+  }
+
+}
+
+/* =========================
+   RESPONSIVIDADE MOBILE
+========================= */
+
+@media (max-width: 600px) {
+
+  body {
+    background: #fff;
+  }
+
+  .login-main {
+    padding: 20px 16px;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+
+  .login-card {
+    padding: 30px 22px;
+    border-radius: 18px;
+    border: none;
+    box-shadow: none;
+  }
+
+  .login-card h1 {
+    font-size: 24px;
+  }
+
+  .login-card > p {
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+
+  .form-group input {
+    padding: 15px;
+    font-size: 16px;
+  }
+
+  .btn-login {
+    padding: 15px;
+    font-size: 16px;
+  }
+
+  .signup-text {
+    font-size: 12px;
+  }
+
+  .inv-header {
+    padding: 14px 16px;
+    align-items: flex-start;
+  }
+
+  .inv-logo {
+    font-size: 22px;
+  }
+
+  .inv-actions {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .btn-login-h,
+  .btn-register-h {
+    flex: 1;
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
+
+}
+
+/* =========================
+   RESPONSIVIDADE MOBILE PEQUENO
+========================= */
+
+@media (max-width: 380px) {
+
+  .login-card {
+    padding: 25px 18px;
+  }
+
+  .login-card h1 {
+    font-size: 21px;
+  }
+
+  .form-group input {
+    padding: 13px;
+  }
+
+  .btn-login {
+    padding: 13px;
+  }
+
+}
