@@ -5,30 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="16c74260-2e3c-4c9b-9e35-720f6ffc80ff" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Investing.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/discord.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/.gitattributes" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/.mvn/wrapper/maven-wrapper.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/docker-compose.yml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/mvnw" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/mvnw.cmd" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/pom.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/main/java/com/example/demo/Config/CorsConfig.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/main/java/com/example/demo/DemoApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/main/java/com/example/demo/controller/AtivoController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/main/java/com/example/demo/model/Ativo.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/main/java/com/example/demo/repository/AtivoRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/main/java/com/example/demo/service/ativoService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/BackEnd/demo/src/test/java/com/example/demo/DemoApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/obj/Debug/net10.0/Investing.AssemblyInfo.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/obj/Debug/net10.0/Investing.AssemblyInfo.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Backend/obj/Debug/net10.0/Investing.AssemblyInfoInputs.cache" beforeDir="false" afterPath="$PROJECT_DIR$/Backend/obj/Debug/net10.0/Investing.AssemblyInfoInputs.cache" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
