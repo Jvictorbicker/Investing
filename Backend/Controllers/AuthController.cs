@@ -69,9 +69,6 @@ public class AuthController : ControllerBase
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        _context.Carteiras.Add(new Carteira { UserId = user.Id });
-        await _context.SaveChangesAsync();
-
         // MUDOU: gera token em vez de SignInAsync
         var token = GerarToken(user);
         return Ok(new { token, nome = user.Nome, email = user.Email });
