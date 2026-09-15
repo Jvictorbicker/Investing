@@ -8,5 +8,5 @@ public class ApplicationUser : IdentityUser
 
     public string? FotoUrl {get; set;}
 
-    public Carteira? Carteira { get; set; }
+    public ICollection<Carteira> Carteiras { get; set; } = new List<Carteira>();
 }

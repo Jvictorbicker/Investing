@@ -14,14 +14,13 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        // OBRIGATÓRIO: chama o base para o Identity criar as tabelas dele
         base.OnModelCreating(builder);
 
-        // Relação 1:1 → User tem uma Carteira
+        // Relação 1:N → User pode ter várias Carteiras
         builder.Entity<ApplicationUser>()
-            .HasOne(u => u.Carteira)
+            .HasMany(u => u.Carteiras)
             .WithOne(c => c.User)
-            .HasForeignKey<Carteira>(c => c.UserId);
+            .HasForeignKey(c => c.UserId);
 
         // Relação 1:N → Carteira tem muitos Ativos
         builder.Entity<Carteira>()
