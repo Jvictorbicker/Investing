@@ -22,8 +22,9 @@ builder.Services.AddCors(options =>
 });
 
 // Database
-builder.Services.AddDbContext<AppDbContext>(opt =>
-    opt.UseNpgsql(builder.Configuration.GetConnectionString("Default")));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("Default")));
 
 // Identity — PRIMEIRO
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()

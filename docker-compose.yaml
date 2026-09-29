@@ -10,8 +10,11 @@ services:
       - "5000:8080"
 
     environment:
-      - ConnectionStrings__Default=Server=host.docker.internal;Database=master;User Id=fscsia;Password=csfais;TrustServerCertificate=True
+      - ConnectionStrings__Default=Server=host.docker.internal;Database=investing_db;User Id=fscsia;Password=csfais;TrustServerCertificate=True
       - Brapi__Token=chyuDjzoytFDSTbk8SbEYY
+      - Jwt__Key=Jw9#vQ2!mX7@kL4$zR8%pT6&nY3*eF5
+      - Jwt__Issuer=InvestingApi
+      - Jwt__Audience=InvestingFrontend
 
     extra_hosts:
       - "host.docker.internal:host-gateway"
