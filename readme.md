@@ -1,3 +1,23 @@
+DESENVOLVIMENTO SEM DOCKER
+──────────────────────────
+localhost:5227  → ASP.NET Core HTTP
+localhost:7107  → ASP.NET Core HTTPS
+
+
+DOCKER
+──────────────────────────
+localhost:5000  → API Docker
+container:8080  → ASP.NET Core dentro do container
+
+localhost:5432  → PostgreSQL Docker
+container:5432  → PostgreSQL
+
+
+COMUNICAÇÃO ENTRE CONTAINERS
+──────────────────────────
+API → postgres:5432
+
+
 # Investify
 
 Aplicação de controle de carteira de investimentos com API em ASP.NET Core e frontend em HTML/CSS/JS.
@@ -122,23 +142,3 @@ ports:
   - "5001:8080"  # troque 5000 por outra porta livre
 ```
 E atualize a variável `API` no `script.js` para a nova porta.
-
-
-DESENVOLVIMENTO SEM DOCKER
-──────────────────────────
-localhost:5227  → ASP.NET Core HTTP
-localhost:7107  → ASP.NET Core HTTPS
-
-
-DOCKER
-──────────────────────────
-localhost:5000  → API Docker
-container:8080  → ASP.NET Core dentro do container
-
-localhost:5432  → PostgreSQL Docker
-container:5432  → PostgreSQL
-
-
-COMUNICAÇÃO ENTRE CONTAINERS
-──────────────────────────
-API → postgres:5432
