@@ -10,6 +10,9 @@ public class Carteira
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public long Id { get; set; }
 
+    // NOVO: nome que o usuário dá para a carteira (ex: "Renda Variável", "Longo Prazo")
+    public string Nome { get; set; } = string.Empty;
+
     public string UserId { get; set; } = string.Empty;
 
     [ForeignKey("UserId")]

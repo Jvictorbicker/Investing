@@ -26,19 +26,14 @@ public class AtivoService
         _brapiToken = config["Brapi:Token"] ?? throw new InvalidOperationException("Brapi token not configured.");
     }
 
-    private async Task<Carteira> ObterOuCriarCarteiraAsync(string userId)
+    // Garante que a carteira existe e pertence ao usuário logado
+    private async Task ValidarCarteiraAsync(long carteiraId, string userId)
     {
-        var carteira = await _context.Carteiras
-            .FirstOrDefaultAsync(c => c.UserId == userId);
+        var existe = await _context.Carteiras
+            .AnyAsync(c => c.Id == carteiraId && c.UserId == userId);
 
-        if (carteira is null)
-        {
-            carteira = new Carteira { UserId = userId };
-            _context.Carteiras.Add(carteira);
-            await _context.SaveChangesAsync();
-        }
-
-        return carteira;
+        if (!existe)
+            throw new UnauthorizedAccessException("Carteira não encontrada ou não pertence ao usuário.");
     }
 
     public async Task<BrapiResponse?> BuscarCotacaoAsync(string ticker)
@@ -49,37 +44,41 @@ public class AtivoService
         return await response.Content.ReadFromJsonAsync<BrapiResponse>();
     }
 
-    public async Task<List<Ativo>> ListarAsync(string userId)
+    public async Task<List<Ativo>> ListarAsync(long carteiraId, string userId)
     {
-        var carteira = await ObterOuCriarCarteiraAsync(userId);
+        await ValidarCarteiraAsync(carteiraId, userId);
         return await _context.Ativos
-            .Where(a => a.CarteiraId == carteira.Id)
+            .Where(a => a.CarteiraId == carteiraId)
             .ToListAsync();
     }
 
-    public async Task<Ativo> SalvarAsync(Ativo ativo, string userId)
+    // Cria um ativo NOVO dentro de uma carteira específica (a carteira já precisa existir)
+    public async Task<Ativo> CriarAsync(Ativo ativo, long carteiraId, string userId)
     {
-        var carteira = await ObterOuCriarCarteiraAsync(userId);
+        await ValidarCarteiraAsync(carteiraId, userId);
 
-        if (ativo.Id == 0)
-        {
-            var cotacao = await BuscarCotacaoAsync(ativo.Ticker);
-            ativo.PrecoCompra = cotacao?.Results?.FirstOrDefault()?.RegularMarketPrice ?? 0;
-            ativo.CarteiraId = carteira.Id;
-            ativo.Carteira = null;
-            _context.Ativos.Add(ativo);
-        }
-        else
-        {
-            var ativoExistente = await _context.Ativos
-                .FirstOrDefaultAsync(a => a.Id == ativo.Id && a.CarteiraId == carteira.Id);
+        var cotacao = await BuscarCotacaoAsync(ativo.Ticker);
+        ativo.PrecoCompra = cotacao?.Results?.FirstOrDefault()?.RegularMarketPrice ?? 0;
+        ativo.CarteiraId = carteiraId;
+        ativo.Carteira = null;
 
-            if (ativoExistente is null)
-                throw new UnauthorizedAccessException("Ativo não pertence ao usuário.");
+        _context.Ativos.Add(ativo);
+        await _context.SaveChangesAsync();
+        return ativo;
+    }
 
-            ativoExistente.Quantidade = ativo.Quantidade;
-            ativoExistente.Ticker = ativo.Ticker;
-        }
+    // Atualiza um ativo já existente (comprar/vender/editar quantidade) — validado via dono da carteira
+    public async Task<Ativo> AtualizarAsync(long id, Ativo dados, string userId)
+    {
+        var ativo = await _context.Ativos
+            .Include(a => a.Carteira)
+            .FirstOrDefaultAsync(a => a.Id == id && a.Carteira!.UserId == userId);
+
+        if (ativo is null)
+            throw new UnauthorizedAccessException("Ativo não encontrado ou não pertence ao usuário.");
+
+        ativo.Quantidade = dados.Quantidade;
+        ativo.Ticker = dados.Ticker;
 
         await _context.SaveChangesAsync();
         return ativo;
@@ -87,10 +86,9 @@ public class AtivoService
 
     public async Task DeletarAsync(long id, string userId)
     {
-        var carteira = await ObterOuCriarCarteiraAsync(userId);
-
         var ativo = await _context.Ativos
-            .FirstOrDefaultAsync(a => a.Id == id && a.CarteiraId == carteira.Id);
+            .Include(a => a.Carteira)
+            .FirstOrDefaultAsync(a => a.Id == id && a.Carteira!.UserId == userId);
 
         if (ativo is null)
             throw new UnauthorizedAccessException("Ativo não encontrado ou não pertence ao usuário.");
@@ -99,9 +97,9 @@ public class AtivoService
         await _context.SaveChangesAsync();
     }
 
-    public async Task<List<AtivoComparativoDto>> ListarComComparativoAsync(string userId)
+    public async Task<List<AtivoComparativoDto>> ListarComComparativoAsync(long carteiraId, string userId)
     {
-        var ativos = await ListarAsync(userId);
+        var ativos = await ListarAsync(carteiraId, userId);
         var result = new List<AtivoComparativoDto>();
 
         foreach (var ativo in ativos)

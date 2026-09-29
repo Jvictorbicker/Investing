@@ -52,21 +52,27 @@
   </div>
 
   <script>
-    const API = "http://localhost:5227/api";
+  const API = "http://localhost:5227/api";
 
-    async function register() {
-      const nome = document.getElementById("nome").value;
-      const email = document.getElementById("email").value;
-      const senha = document.getElementById("password").value;
-      const confirm = document.getElementById("confirm").value;
-      const erro = document.getElementById("erro");
+  async function register() {
+    const nome = document.getElementById("nome").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const senha = document.getElementById("password").value;
+    const confirm = document.getElementById("confirm").value;
+    const erro = document.getElementById("erro");
+    const btn = document.querySelector(".btn-login");
 
-      if (senha !== confirm) {
-        erro.textContent = "As senhas não coincidem.";
-        erro.style.display = "block";
-        return;
-      }
+    erro.style.display = "none";
 
+    if (senha !== confirm) {
+      erro.textContent = "As senhas não coincidem.";
+      erro.style.display = "block";
+      return;
+    }
+
+    btn.disabled = true; // evita duplo clique
+
+    try {
       const res = await fetch(`${API}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -75,13 +81,20 @@
       });
 
       if (res.ok) {
-        window.location.href = "index.html";
-      } else {
-        const data = await res.json();
-        erro.textContent = data[0]?.description || "Erro ao criar conta.";
-        erro.style.display = "block";
+        window.location.href = "login.html?criada=1";
+        return;
       }
+
+      const data = await res.json().catch(() => null);
+      erro.textContent = data?.[0]?.description || "Erro ao criar conta.";
+      erro.style.display = "block";
+    } catch {
+      erro.textContent = "Falha de conexão com o servidor.";
+      erro.style.display = "block";
+    } finally {
+      btn.disabled = false;
     }
-  </script>
+  }
+</script>
 </body>
 </html>

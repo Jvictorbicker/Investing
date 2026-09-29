@@ -3,7 +3,8 @@
    DEPENDE de script.js (carregado antes):
      - const API já declarada lá
      - autenticação via cookie (credentials: "include")
-   
+     - carteiraAtual (carteira aberta no momento)
+
    Estrutura do JSON retornado pela API:
    [{ ativo: { id, ticker, precoCompra, quantidade, carteiraId }, precoAtual, variacaoAbsoluta, variacaoPercent }]
    ───────────────────────────────────────── */
@@ -62,7 +63,7 @@ function showContent() {
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 async function fetchComparativo() {
-  const res = await fetch(`${API}/ativos/comparativo`, {
+  const res = await fetch(`${API}/carteiras/${carteiraAtual.id}/ativos/comparativo`, {
     credentials: 'include',
   });
 
@@ -244,7 +245,7 @@ function filtrarRend(id) {
 
 // ─── Inicialização ────────────────────────────────────────────────────────────
 async function initRendimentos() {
-  if (!document.getElementById('loadingState')) return;
+  if (!document.getElementById('loadingState') || !carteiraAtual) return;
 
   showLoading();
 
@@ -252,7 +253,7 @@ async function initRendimentos() {
     const dados = await fetchComparativo();
 
     if (!Array.isArray(dados) || dados.length === 0) {
-      showError('Nenhum ativo encontrado na sua carteira.');
+      showError('Nenhum ativo encontrado nesta carteira.');
       return;
     }
 

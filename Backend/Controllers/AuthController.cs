@@ -23,13 +23,13 @@ public class AuthController : ControllerBase
     private readonly AppDbContext _context;
     private readonly IConfiguration _config; // NOVO
 
-    public AuthController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, AppDbContext context, IConfiguration config)
-    {
-        _userManager = userManager;
-        _signInManager = signInManager;
-        _context = context;
-        _config = config; // NOVO
-    }
+    public AuthController(
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager)
+{
+    _userManager = userManager;
+    _signInManager = signInManager;
+}
 
     // ─── Geração de Token ───────────────────────────────────────────────────
     private string GerarToken(ApplicationUser user)
@@ -56,41 +56,42 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto) 
     {
-        var user = new ApplicationUser
-        {
-            Nome = dto.Nome,
-            UserName = dto.Email,
-            Email = dto.Email
-        };
+    var user = new ApplicationUser
+    {
+        Nome = dto.Nome,
+        UserName = dto.Email,
+        Email = dto.Email
+    };
 
-        var result = await _userManager.CreateAsync(user, dto.Senha);
-        if (!result.Succeeded)
-            return BadRequest(result.Errors);
+    var result = await _userManager.CreateAsync(user, dto.Senha);
+    if (!result.Succeeded)
+        return BadRequest(result.Errors);
 
-        // MUDOU: gera token em vez de SignInAsync
-        var token = GerarToken(user);
-        return Ok(new { token, nome = user.Nome, email = user.Email });
-    }
+    return Ok(new { nome = user.Nome, email = user.Email });
+}
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto dto)
-    {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
-        if (user is null || !await _userManager.CheckPasswordAsync(user, dto.Senha))
-            return Unauthorized(new { mensagem = "Email ou senha inválidos." });
+        {
+    var user = await _userManager.FindByEmailAsync(dto.Email);
+    if (user == null)
+        return Unauthorized();
 
-        // MUDOU: gera token em vez de PasswordSignInAsync
-        var token = GerarToken(user);
-        return Ok(new { token, nome = user.Nome, email = user.Email });
-    }
+    var result = await _signInManager.PasswordSignInAsync(
+        user, dto.Senha, isPersistent: true, lockoutOnFailure: false);
+
+    if (!result.Succeeded)
+        return Unauthorized();
+
+    return Ok(new { user.Nome, user.Email });
+}
 
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        // Com JWT não existe "logout" no servidor — o cliente só descarta o token.
-        // Mantido aqui só para não quebrar chamadas existentes do front.
+        await _signInManager.SignOutAsync();
         return Ok();
     }
 

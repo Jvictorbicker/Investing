@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Inventory investing</title>
+  <title>Investify</title>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
@@ -18,8 +18,7 @@
     <div class="divider"></div>
 
     <nav>
-      <a data-page="carteira" class="active">Carteira</a>
-      <a data-page="rendimentos">Rendimentos</a>
+      <a data-page="carteiras" class="active">Minhas Carteiras</a>
       <a data-page="conta">Minha conta</a>
     </nav>
 
@@ -36,10 +35,26 @@
   <!-- MAIN -->
   <main class="main">
 
-    <!-- CARTEIRA -->
-    <section id="carteira" class="page active">
+    <!-- LISTA DE CARTEIRAS (tela inicial) -->
+    <section id="carteiras" class="page active">
       <header class="header">
-        <h1>Minha <span>Carteira</span></h1>
+        <h1>Minhas <span>Carteiras</span></h1>
+        <p>Escolha uma carteira para ver ou adicionar ativos.</p>
+      </header>
+
+      <div class="carteiras-grid" id="carteirasGrid">
+        <div class="card add-card carteira-add-card">
+          <button class="big-add" id="btn-nova-carteira">+</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ATIVOS DE UMA CARTEIRA -->
+    <section id="carteira" class="page">
+      <header class="header carteira-detail-header">
+        <button class="btn-voltar" id="btn-voltar-carteiras">&larr; Carteiras</button>
+        <h1 id="carteira-nome-titulo">Carteira</h1>
+        <button class="btn-ver-rendimentos" id="btn-ver-rendimentos">Ver rendimentos</button>
       </header>
 
       <section class="dashboard">
@@ -47,7 +62,7 @@
           <h2>Seus <span>Investimentos</span></h2>
           <div class="cards">
             <div class="card add-card">
-              <button class="big-add">+</button>
+              <button class="big-add" id="btn-add-ativo">+</button>
             </div>
           </div>
         </div>
@@ -109,51 +124,52 @@
 
   </div>
 </section>
-    
+
 
     <!-- RENDIMENTOS -->
     <section id="rendimentos" class="page">
- 
+
   <!-- Cabeçalho -->
   <div class="header">
+    <button class="btn-voltar" id="btn-voltar-rendimentos">&larr; Voltar para a carteira</button>
     <h1>Meus <span>Rendimentos</span></h1>
     <p>Acompanhe o desempenho dos seus ativos em relação ao preço de compra.</p>
   </div>
- 
+
   <!-- Estado de carregamento -->
   <div id="loadingState" class="loading-state">
     <div class="spinner"></div>
     <p>Carregando seus ativos...</p>
   </div>
- 
+
   <!-- Estado de erro -->
   <div id="errorState" class="error-state" style="display:none;">
     <p id="errorMsg">Erro ao carregar dados.</p>
     <button onclick="initRendimentos()">Tentar novamente</button>
   </div>
- 
+
   <!-- Conteúdo principal (oculto até carregar) -->
   <div id="mainContent" style="display:none;">
- 
+
     <!-- Cards de resumo -->
     <div class="rend-stats" id="statsRow"></div>
- 
+
     <!-- Gráfico -->
     <div class="chart-card">
       <div class="chart-card-header">
         <h3>Comparativo: preço de compra × valor atual</h3>
       </div>
- 
+
       <!-- Filtros -->
       <div class="toggle-wrap" id="toggleWrap"></div>
- 
+
       <!-- Legenda -->
       <div class="legend">
         <span><span class="legend-dot" style="background:#8A05BE;"></span>Preço de compra</span>
         <span><span class="legend-dot" style="background:#1a7a4a;"></span>Lucro</span>
         <span><span class="legend-dot" style="background:#c0392b;"></span>Prejuízo</span>
       </div>
- 
+
       <div class="chart-wrap">
         <canvas id="rendChart"
           role="img"
@@ -162,10 +178,10 @@
         </canvas>
       </div>
     </div>
- 
+
     <!-- Lista de ativos -->
     <div class="ativo-list" id="ativoList"></div>
- 
+
   </div>
 
 </section>

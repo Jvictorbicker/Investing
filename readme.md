@@ -1,22 +1,4 @@
-DESENVOLVIMENTO SEM DOCKER
-──────────────────────────
-localhost:5227  → ASP.NET Core HTTP
-localhost:7107  → ASP.NET Core HTTPS
-
-
-DOCKER
-──────────────────────────
-localhost:5000  → API Docker
-container:8080  → ASP.NET Core dentro do container
-
-localhost:5432  → PostgreSQL Docker
-container:5432  → PostgreSQL
-
-
-COMUNICAÇÃO ENTRE CONTAINERS
-──────────────────────────
-API → postgres:5432
-
+Server=localhost;Database=master;Trusted_Connection=True;
 
 # Investify
 
