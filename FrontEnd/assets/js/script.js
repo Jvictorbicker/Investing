@@ -1,5 +1,6 @@
-const API = "http://localhost:5227/api";
+const API = `http://${window.location.hostname}:5227/api`;
 const API_PERFIL = `${API}/auth/perfil`;
+
 
 // ─── Estado da carteira selecionada ────────────────────────────────────────────
 let carteiraAtual = null; // { id, nome }
@@ -92,7 +93,7 @@ async function carregarPerfil() {
   document.getElementById("campo-tel").value = perfil.telefone || "";
 
   if (perfil.fotoUrl) {
-    const urlCompleta = `http://localhost:5227${perfil.fotoUrl}`;
+    const urlCompleta = `${API.replace("/api", "")}${perfil.fotoUrl}`;
     document.getElementById('avatar-wrap').innerHTML =
       `<img src="${urlCompleta}" alt="Foto de perfil">`;
     const sidebarImg = document.getElementById('profile-pic');
