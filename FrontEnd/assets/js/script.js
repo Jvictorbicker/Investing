@@ -1,6 +1,5 @@
-const API = `http://${window.location.hostname}:5227/api`;
+const API = `http://${window.location.hostname || "localhost"}:5227/api`;
 const API_PERFIL = `${API}/auth/perfil`;
-
 
 // ─── Estado da carteira selecionada ────────────────────────────────────────────
 let carteiraAtual = null; // { id, nome }

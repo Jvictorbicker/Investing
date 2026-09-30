@@ -4,7 +4,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AtivoApi.Services;
 
-public record CarteiraResumoDto(long Id, string Nome, int QtdAtivos);
+public record CarteiraResumoDto(
+    long Id,
+    string Nome,
+    int QtdAtivos
+);
 
 public class CarteiraService
 {
@@ -15,39 +19,85 @@ public class CarteiraService
         _context = context;
     }
 
-    public async Task<List<CarteiraResumoDto>> ListarAsync(string userId)
+    // ============================================================
+    // LISTAR CARTEIRAS DO USUÁRIO
+    // ============================================================
+
+    public async Task<List<CarteiraResumoDto>>
+        ListarAsync(int usuarioId)
     {
         return await _context.Carteiras
-            .Where(c => c.UserId == userId)
-            .Select(c => new CarteiraResumoDto(c.Id, c.Nome, c.Ativos.Count))
+            .Where(c => c.UsuarioId == usuarioId)
+            .Select(c =>
+                new CarteiraResumoDto(
+                    c.Id,
+                    c.Nome,
+                    c.Ativos.Count
+                )
+            )
             .ToListAsync();
     }
 
-    public async Task<Carteira> CriarAsync(string nome, string userId)
+    // ============================================================
+    // CRIAR CARTEIRA
+    // ============================================================
+
+    public async Task<Carteira> CriarAsync(
+        string nome,
+        int usuarioId)
     {
-        var carteira = new Carteira { Nome = nome, UserId = userId };
+        var carteira = new Carteira
+        {
+            Nome = nome,
+            UsuarioId = usuarioId
+        };
+
         _context.Carteiras.Add(carteira);
+
         await _context.SaveChangesAsync();
+
         return carteira;
     }
 
-    // Garante que a carteira existe e pertence ao usuário logado.
-    // Usado também pelo AtivoService antes de listar/criar ativos numa carteira.
-    public async Task<Carteira> ObterEValidarAsync(long carteiraId, string userId)
+    // ============================================================
+    // OBTER E VALIDAR CARTEIRA
+    // ============================================================
+
+    public async Task<Carteira> ObterEValidarAsync(
+        long carteiraId,
+        int usuarioId)
     {
         var carteira = await _context.Carteiras
-            .FirstOrDefaultAsync(c => c.Id == carteiraId && c.UserId == userId);
+            .FirstOrDefaultAsync(c =>
+                c.Id == carteiraId &&
+                c.UsuarioId == usuarioId
+            );
 
         if (carteira is null)
-            throw new UnauthorizedAccessException("Carteira não encontrada ou não pertence ao usuário.");
+        {
+            throw new UnauthorizedAccessException(
+                "Carteira não encontrada ou não pertence ao usuário."
+            );
+        }
 
         return carteira;
     }
 
-    public async Task DeletarAsync(long carteiraId, string userId)
+    // ============================================================
+    // DELETAR CARTEIRA
+    // ============================================================
+
+    public async Task DeletarAsync(
+        long carteiraId,
+        int usuarioId)
     {
-        var carteira = await ObterEValidarAsync(carteiraId, userId);
-        _context.Carteiras.Remove(carteira); // cascata remove os ativos da carteira
+        var carteira = await ObterEValidarAsync(
+            carteiraId,
+            usuarioId
+        );
+
+        _context.Carteiras.Remove(carteira);
+
         await _context.SaveChangesAsync();
     }
 }

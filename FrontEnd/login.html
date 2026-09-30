@@ -44,7 +44,7 @@
   </div>
 
   <script>
-    const API = "http://localhost:5227/api";
+    const API = `http://${window.location.hostname || "localhost"}:5227/api`;
 
     if (new URLSearchParams(window.location.search).get("criada") === "1") {
   document.getElementById("sucesso").style.display = "block";

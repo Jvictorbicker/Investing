@@ -52,7 +52,7 @@
   </div>
 
   <script>
-  const API = "http://localhost:5227/api";
+  const API = `http://${window.location.hostname || "localhost"}:5227/api`;
 
   async function register() {
     const nome = document.getElementById("nome").value.trim();
