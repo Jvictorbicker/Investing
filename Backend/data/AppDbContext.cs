@@ -1,14 +1,16 @@
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using AtivoApi.Models;
 
 namespace AtivoApi.Data;
 
-// Troca DbContext por IdentityDbContext<ApplicationUser>
-public class AppDbContext : IdentityDbContext<ApplicationUser>
+public class AppDbContext : DbContext
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+    public AppDbContext(DbContextOptions<AppDbContext> options)
+        : base(options)
+    {
+    }
 
+    public DbSet<Usuario> Usuarios { get; set; }
     public DbSet<Carteira> Carteiras { get; set; }
     public DbSet<Ativo> Ativos { get; set; }
 
@@ -16,13 +18,11 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
-        // Relação 1:N → User pode ter várias Carteiras
-        builder.Entity<ApplicationUser>()
+        builder.Entity<Usuario>()
             .HasMany(u => u.Carteiras)
-            .WithOne(c => c.User)
-            .HasForeignKey(c => c.UserId);
+            .WithOne(c => c.Usuario)
+            .HasForeignKey(c => c.UsuarioId);
 
-        // Relação 1:N → Carteira tem muitos Ativos
         builder.Entity<Carteira>()
             .HasMany(c => c.Ativos)
             .WithOne(a => a.Carteira)

@@ -1,167 +1,282 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using AtivoApi.Data;
 using AtivoApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AtivoApi.Controllers;
 
-public record RegisterDto(string Nome, string Email, string Senha);
-public record LoginDto(string Email, string Senha);
-public record AtualizarPerfilDto(string? Nome, string? Email, string? Telefone, string? SenhaAtual, string? NovaSenha);
+public record RegisterDto(
+    string Nome,
+    string Email,
+    string Senha
+);
+
+public record LoginDto(
+    string Email,
+    string Senha
+);
+
+public record AtualizarPerfilDto(
+    string? Nome,
+    string? Email,
+    string? Telefone,
+    string? SenhaAtual,
+    string? NovaSenha
+);
 
 [ApiController]
 [Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly UserManager<ApplicationUser> _userManager;
-    private readonly SignInManager<ApplicationUser> _signInManager;
     private readonly AppDbContext _context;
-    private readonly IConfiguration _config; // NOVO
+    private readonly PasswordHasher<Usuario> _passwordHasher;
 
-    public AuthController(
-    UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager)
-{
-    _userManager = userManager;
-    _signInManager = signInManager;
-}
-
-    // ─── Geração de Token ───────────────────────────────────────────────────
-    private string GerarToken(ApplicationUser user)
+    public AuthController(AppDbContext context)
     {
-        var claims = new[]
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Email, user.Email!),
-            new Claim("nome", user.Nome)
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            issuer: _config["Jwt:Issuer"],
-            audience: _config["Jwt:Audience"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(double.Parse(_config["Jwt:ExpiresInMinutes"]!)),
-            signingCredentials: creds
-        );
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
+        _context = context;
+        _passwordHasher = new PasswordHasher<Usuario>();
     }
 
+    // ============================================================
+    // REGISTER
+    // ============================================================
+
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterDto dto) 
+    public async Task<IActionResult> Register(RegisterDto dto)
     {
-    var user = new ApplicationUser
-    {
-        Nome = dto.Nome,
-        UserName = dto.Email,
-        Email = dto.Email
-    };
+        if (string.IsNullOrWhiteSpace(dto.Nome) ||
+            string.IsNullOrWhiteSpace(dto.Email) ||
+            string.IsNullOrWhiteSpace(dto.Senha))
+        {
+            return BadRequest("Nome, e-mail e senha são obrigatórios.");
+        }
 
-    var result = await _userManager.CreateAsync(user, dto.Senha);
-    if (!result.Succeeded)
-        return BadRequest(result.Errors);
+        var email = dto.Email.Trim().ToLower();
 
-    return Ok(new { nome = user.Nome, email = user.Email });
-}
+        var existe = await _context.Usuarios
+            .AnyAsync(u => u.Email == email);
+
+        if (existe)
+            return BadRequest("E-mail já cadastrado.");
+
+        var usuario = new Usuario
+        {
+            Nome = dto.Nome.Trim(),
+            Email = email
+        };
+
+        usuario.Senha = _passwordHasher.HashPassword(
+            usuario,
+            dto.Senha
+        );
+
+        _context.Usuarios.Add(usuario);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            usuario.Id,
+            usuario.Nome,
+            usuario.Email
+        });
+    }
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    public async Task<IActionResult> Login(LoginDto dto)
+    {
+        var email = dto.Email.Trim().ToLower();
+
+        var usuario = await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Email == email);
+
+        if (usuario is null)
+            return Unauthorized("E-mail ou senha inválidos.");
+
+        var resultado = _passwordHasher.VerifyHashedPassword(
+            usuario,
+            usuario.Senha,
+            dto.Senha
+        );
+
+        if (resultado == PasswordVerificationResult.Failed)
+            return Unauthorized("E-mail ou senha inválidos.");
+
+        var claims = new List<Claim>
         {
-    var user = await _userManager.FindByEmailAsync(dto.Email);
-    if (user == null)
-        return Unauthorized();
+            new Claim(
+                ClaimTypes.NameIdentifier,
+                usuario.Id.ToString()
+            ),
 
-    var result = await _signInManager.PasswordSignInAsync(
-        user, dto.Senha, isPersistent: true, lockoutOnFailure: false);
+            new Claim(
+                ClaimTypes.Name,
+                usuario.Nome
+            ),
 
-    if (!result.Succeeded)
-        return Unauthorized();
+            new Claim(
+                ClaimTypes.Email,
+                usuario.Email
+            )
+        };
 
-    return Ok(new { user.Nome, user.Email });
-}
+        var identity = new ClaimsIdentity(
+            claims,
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
 
+        var principal = new ClaimsPrincipal(identity);
+
+        await HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            principal,
+            new AuthenticationProperties
+            {
+                IsPersistent = true,
+                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
+            }
+        );
+
+        return Ok(new
+        {
+            usuario.Id,
+            usuario.Nome,
+            usuario.Email
+        });
+    }
+
+    // ============================================================
+    // LOGOUT
+    // ============================================================
+
+    [Authorize]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        await HttpContext.SignOutAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme
+        );
+
         return Ok();
     }
+
+    // ============================================================
+    // ME
+    // ============================================================
 
     [Authorize]
     [HttpGet("me")]
     public async Task<IActionResult> Me()
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return Unauthorized();
+        var usuario = await ObterUsuarioLogado();
 
-        return Ok(new { nome = user.Nome, email = user.Email, telefone = user.PhoneNumber });
+        if (usuario is null)
+            return Unauthorized();
+
+        return Ok(new
+        {
+            usuario.Id,
+            usuario.Nome,
+            usuario.Email,
+            usuario.FotoUrl
+        });
     }
 
-    // ─── Perfil ───────────────────────────────────────────────────────────────
+    // ============================================================
+    // PERFIL
+    // ============================================================
 
     [Authorize]
     [HttpGet("perfil")]
     public async Task<IActionResult> GetPerfil()
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return Unauthorized();
+        var usuario = await ObterUsuarioLogado();
 
-        return Ok(new { nome = user.Nome, email = user.Email, telefone = user.PhoneNumber, fotoUrl = user.FotoUrl });
+        if (usuario is null)
+            return Unauthorized();
+
+        return Ok(new
+        {
+            usuario.Id,
+            usuario.Nome,
+            usuario.Email,
+            usuario.FotoUrl
+        });
     }
+
+    // ============================================================
+    // ATUALIZAR PERFIL
+    // ============================================================
 
     [Authorize]
     [HttpPut("perfil")]
-    public async Task<IActionResult> AtualizarPerfil([FromBody] AtualizarPerfilDto dto)
+    public async Task<IActionResult> AtualizarPerfil(
+        AtualizarPerfilDto dto)
     {
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return Unauthorized();
+        var usuario = await ObterUsuarioLogado();
 
-        // ── Nome ──────────────────────────────────────────────────────────────
+        if (usuario is null)
+            return Unauthorized();
+
         if (!string.IsNullOrWhiteSpace(dto.Nome))
-            user.Nome = dto.Nome.Trim();
+            usuario.Nome = dto.Nome.Trim();
 
-        // ── Telefone ──────────────────────────────────────────────────────────
-        user.PhoneNumber = dto.Telefone?.Trim();
-
-        // ── E-mail ────────────────────────────────────────────────────────────
-        if (!string.IsNullOrWhiteSpace(dto.Email) &&
-            !dto.Email.Equals(user.Email, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(dto.Email))
         {
-            var setEmail = await _userManager.SetEmailAsync(user, dto.Email.Trim());
-            if (!setEmail.Succeeded)
-                return BadRequest(setEmail.Errors.Select(e => e.Description));
+            var email = dto.Email.Trim().ToLower();
 
-            var setUser = await _userManager.SetUserNameAsync(user, dto.Email.Trim());
-            if (!setUser.Succeeded)
-                return BadRequest(setUser.Errors.Select(e => e.Description));
+            var emailExiste = await _context.Usuarios
+                .AnyAsync(u =>
+                    u.Email == email &&
+                    u.Id != usuario.Id);
+
+            if (emailExiste)
+                return BadRequest("E-mail já está sendo utilizado.");
+
+            usuario.Email = email;
         }
 
-        // ── Senha (opcional) ──────────────────────────────────────────────────
         if (!string.IsNullOrWhiteSpace(dto.NovaSenha))
         {
             if (string.IsNullOrWhiteSpace(dto.SenhaAtual))
-                return BadRequest(new[] { "Informe a senha atual para alterá-la." });
+                return BadRequest(
+                    "Informe a senha atual para alterá-la."
+                );
 
-            var changePassword = await _userManager.ChangePasswordAsync(user, dto.SenhaAtual, dto.NovaSenha);
-            if (!changePassword.Succeeded)
-                return BadRequest(changePassword.Errors.Select(e => e.Description));
+            var senhaAtual = _passwordHasher.VerifyHashedPassword(
+                usuario,
+                usuario.Senha,
+                dto.SenhaAtual
+            );
+
+            if (senhaAtual == PasswordVerificationResult.Failed)
+                return BadRequest("Senha atual inválida.");
+
+            usuario.Senha = _passwordHasher.HashPassword(
+                usuario,
+                dto.NovaSenha
+            );
         }
 
-        // ── Persiste ──────────────────────────────────────────────────────────
-        var update = await _userManager.UpdateAsync(user);
-        if (!update.Succeeded)
-            return BadRequest(update.Errors.Select(e => e.Description));
+        await _context.SaveChangesAsync();
 
-        return Ok(new { message = "Perfil atualizado com sucesso." });
+        return Ok(new
+        {
+            message = "Perfil atualizado com sucesso."
+        });
     }
+
+    // ============================================================
+    // FOTO
+    // ============================================================
 
     [Authorize]
     [HttpPost("perfil/foto")]
@@ -170,22 +285,55 @@ public class AuthController : ControllerBase
         if (foto is null || foto.Length == 0)
             return BadRequest("Nenhum arquivo enviado.");
 
-        var user = await _userManager.GetUserAsync(User);
-        if (user is null) return Unauthorized();
+        var usuario = await ObterUsuarioLogado();
 
-        var pasta = Path.Combine("wwwroot", "avatars");
+        if (usuario is null)
+            return Unauthorized();
+
+        var pasta = Path.Combine(
+            "wwwroot",
+            "avatars"
+        );
+
         Directory.CreateDirectory(pasta);
 
         var extensao = Path.GetExtension(foto.FileName);
-        var nomeArquivo = $"{user.Id}{extensao}";
-        var caminho = Path.Combine(pasta, nomeArquivo);
 
-        using (var stream = System.IO.File.Create(caminho))
-            await foto.CopyToAsync(stream);
+        var nomeArquivo = $"{usuario.Id}{extensao}";
 
-        user.FotoUrl = $"/avatars/{nomeArquivo}";
-        await _userManager.UpdateAsync(user);
+        var caminho = Path.Combine(
+            pasta,
+            nomeArquivo
+        );
 
-        return Ok(new { fotoUrl = user.FotoUrl });
+        using var stream = System.IO.File.Create(caminho);
+
+        await foto.CopyToAsync(stream);
+
+        usuario.FotoUrl = $"/avatars/{nomeArquivo}";
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            fotoUrl = usuario.FotoUrl
+        });
+    }
+
+    // ============================================================
+    // USUARIO LOGADO
+    // ============================================================
+
+    private async Task<Usuario?> ObterUsuarioLogado()
+    {
+        var claim = User.FindFirstValue(
+            ClaimTypes.NameIdentifier
+        );
+
+        if (!int.TryParse(claim, out var usuarioId))
+            return null;
+
+        return await _context.Usuarios
+            .FirstOrDefaultAsync(u => u.Id == usuarioId);
     }
 }

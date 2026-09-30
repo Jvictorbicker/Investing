@@ -1,0 +1,4 @@
+IF DB_ID ('InvestifyDB') IS NULL
+BEGIN
+    CREATE DATABASE InvestifyDB;
+END;

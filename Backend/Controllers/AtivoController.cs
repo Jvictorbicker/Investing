@@ -17,9 +17,15 @@ public class AtivosController : ControllerBase
         _service = service;
     }
 
-    private string GetUserId() =>
-        User.FindFirstValue(ClaimTypes.NameIdentifier)
-        ?? throw new UnauthorizedAccessException("Usuário não autenticado.");
+    private int GetUserId()
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!int.TryParse(userId, out var id))
+            throw new UnauthorizedAccessException("Usuário não autenticado.");
+
+        return id;
+    }
 
     // ── Escopadas por carteira ──────────────────────────────────────────────
     [HttpGet("api/carteiras/{carteiraId}/ativos")]
