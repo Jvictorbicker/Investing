@@ -1826,3 +1826,108 @@ body {
     }
 
 }
+
+/* ============================================================
+   CARD DA CARTEIRA
+============================================================ */
+
+.carteira-card {
+    position: relative;
+    cursor: pointer;
+    padding: 22px;
+}
+
+
+/* Cabeçalho do card */
+
+.carteira-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+
+.carteira-card-top h3 {
+    margin: 0;
+    font-size: 18px;
+}
+
+
+/* Botões */
+
+.carteira-acoes {
+    display: flex;
+    gap: 6px;
+}
+
+
+.carteira-acoes button {
+    width: 32px;
+    height: 32px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #f3e6f8;
+
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    transition: 0.2s;
+}
+
+
+.carteira-acoes button:hover {
+    transform: scale(1.08);
+}
+
+
+.btn-editar-carteira:hover {
+    background: #8a05be;
+}
+
+
+.btn-excluir-carteira:hover {
+    background: #8a05be;
+}
+
+
+/* Informações */
+
+.carteira-info {
+    margin-top: 20px;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 12px;
+}
+
+
+.carteira-info > span {
+    color: #666;
+    font-size: 14px;
+}
+
+
+.carteira-valor {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+
+.carteira-valor small {
+    color: #777;
+    font-size: 12px;
+}
+
+
+.carteira-valor strong {
+    color: #8a05be;
+    font-size: 20px;
+}

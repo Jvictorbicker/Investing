@@ -158,6 +158,7 @@ document.getElementById("btn-logout").addEventListener("click", async () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function carregarCarteiras() {
+
   const res = await fetch(`${API}/carteiras`, {
     credentials: "include"
   });
@@ -171,33 +172,295 @@ async function carregarCarteiras() {
 
   const grid = document.getElementById("carteirasGrid");
 
-  // Remove somente os cards das carteiras existentes
-  grid.querySelectorAll(".carteira-card").forEach(c => c.remove());
+  // Remove os cards antigos das carteiras
+  grid.querySelectorAll(".carteira-card").forEach(card => {
+    card.remove();
+  });
 
-  // Se não houver carteiras, mantém somente "Nova carteira"
+  // O botão "Nova carteira" continua sempre na frente
+  const addCard = document.getElementById("btn-nova-carteira");
+
+  // Se não tiver nenhuma carteira,
+  // não cria nenhum card adicional.
   if (!carteiras.length) {
     return;
   }
 
-  // Cria as carteiras depois do botão "Nova carteira"
-  carteiras.forEach(c => {
+  // ============================================================
+  // CRIA OS CARDS
+  // ============================================================
+
+  for (const c of carteiras) {
+
+    let valorTotal = 0;
+
+    try {
+
+      const ativosRes = await fetch(
+        `${API}/carteiras/${c.id}/ativos`,
+        {
+          credentials: "include"
+        }
+      );
+
+      if (ativosRes.ok) {
+
+        const ativos = await ativosRes.json();
+
+        if (ativos.length > 0) {
+
+          const tickers = ativos
+            .map(a => a.ticker)
+            .join(",");
+
+          const cotacoesRes = await fetch(
+            `${API}/ativos/cotacoes?tickers=${tickers}`,
+            {
+              credentials: "include"
+            }
+          );
+
+          if (cotacoesRes.ok) {
+
+            const respostas = await cotacoesRes.json();
+
+            const precoMap = {};
+
+            respostas.forEach(resposta => {
+
+              resposta?.results?.forEach(p => {
+
+                precoMap[p.symbol] =
+                  p.regularMarketPrice || 0;
+
+              });
+
+            });
+
+            ativos.forEach(ativo => {
+
+              const precoAtual =
+                precoMap[ativo.ticker] || 0;
+
+              valorTotal +=
+                precoAtual * ativo.quantidade;
+
+            });
+          }
+        }
+      }
+
+    } catch (erro) {
+
+      console.error(
+        `Erro ao calcular carteira ${c.id}:`,
+        erro
+      );
+
+    }
+
+    // ============================================================
+    // CARD
+    // ============================================================
+
     const card = document.createElement("div");
 
     card.className = "card carteira-card";
 
     card.innerHTML = `
-      <h3>${c.nome}</h3>
-      <span>
-        ${c.qtdAtivos} ${c.qtdAtivos === 1 ? "ativo" : "ativos"}
-      </span>
+
+      <div class="carteira-card-top">
+
+        <h3>
+          ${c.nome}
+        </h3>
+
+        <div class="carteira-acoes">
+
+          <button
+            type="button"
+            class="btn-editar-carteira"
+            title="Alterar nome"
+          >
+            ✏️
+          </button>
+
+          <button
+            type="button"
+            class="btn-excluir-carteira"
+            title="Excluir carteira"
+          >
+            🗑️
+          </button>
+
+        </div>
+
+      </div>
+
+      <div class="carteira-info">
+
+        <span>
+          ${c.qtdAtivos}
+          ${c.qtdAtivos === 1 ? "ativo" : "ativos"}
+        </span>
+
+        <div class="carteira-valor">
+
+          <small>
+            Valor total
+          </small>
+
+          <strong>
+            ${valorTotal.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL"
+            })}
+          </strong>
+
+        </div>
+
+      </div>
     `;
 
+    // ============================================================
+    // ABRIR CARTEIRA
+    // ============================================================
+
     card.addEventListener("click", () => {
-      abrirCarteira(c.id, c.nome);
+
+      abrirCarteira(
+        c.id,
+        c.nome
+      );
+
     });
 
+    // ============================================================
+    // EDITAR
+    // ============================================================
+
+    const btnEditar =
+      card.querySelector(".btn-editar-carteira");
+
+    btnEditar.addEventListener("click", async (event) => {
+
+      event.stopPropagation();
+
+      const novoNome = prompt(
+        "Digite o novo nome da carteira:",
+        c.nome
+      );
+
+      if (
+        novoNome === null ||
+        !novoNome.trim()
+      ) {
+        return;
+      }
+
+      const nome = novoNome.trim();
+
+      if (nome === c.nome) {
+        return;
+      }
+
+      const resposta = await fetch(
+        `${API}/carteiras/${c.id}`,
+        {
+          method: "PUT",
+
+          headers: {
+            "Content-Type": "application/json"
+          },
+
+          credentials: "include",
+
+          body: JSON.stringify({
+            nome: nome
+          })
+        }
+      );
+
+      if (!resposta.ok) {
+
+        const erro =
+          await resposta.text();
+
+        alert(
+          erro ||
+          "Não foi possível alterar o nome da carteira."
+        );
+
+        return;
+      }
+
+      // Atualiza a lista
+      carregarCarteiras();
+
+    });
+
+    // ============================================================
+    // EXCLUIR
+    // ============================================================
+
+    const btnExcluir =
+      card.querySelector(".btn-excluir-carteira");
+
+    btnExcluir.addEventListener("click", async (event) => {
+
+      event.stopPropagation();
+
+      const confirmar = confirm(
+        `Deseja realmente excluir a carteira "${c.nome}"?\n\n` +
+        `Todos os ativos dessa carteira serão removidos.`
+      );
+
+      if (!confirmar) {
+        return;
+      }
+
+      const resposta = await fetch(
+        `${API}/carteiras/${c.id}`,
+        {
+          method: "DELETE",
+          credentials: "include"
+        }
+      );
+
+      if (!resposta.ok) {
+
+        const erro =
+          await resposta.text();
+
+        alert(
+          erro ||
+          "Não foi possível excluir a carteira."
+        );
+
+        return;
+      }
+
+      // Se era a carteira aberta, limpa a seleção
+      if (
+        carteiraAtual &&
+        carteiraAtual.id === c.id
+      ) {
+        carteiraAtual = null;
+      }
+
+      // Atualiza a tela
+      mostrarPagina("carteiras");
+
+      carregarCarteiras();
+
+    });
+
+    // ============================================================
+    // COLOCA DEPOIS DO BOTÃO NOVA CARTEIRA
+    // ============================================================
+
     grid.appendChild(card);
-  });
+  }
 }
 
 document.getElementById("btn-nova-carteira").addEventListener("click", async () => {

@@ -83,6 +83,26 @@ public class CarteiraService
         return carteira;
     }
 
+   public async Task<Carteira?> AlterarNomeAsync(
+    long id,
+    string nome,
+    int usuarioId)
+    {
+        var carteira = await _context.Carteiras
+            .FirstOrDefaultAsync(c =>
+                c.Id == id &&
+                c.UsuarioId == usuarioId);
+
+        if (carteira == null)
+            return null;
+
+        carteira.Nome = nome.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return carteira;
+    }
+
     // ============================================================
     // DELETAR CARTEIRA
     // ============================================================
