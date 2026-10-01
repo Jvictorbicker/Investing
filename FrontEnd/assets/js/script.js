@@ -158,29 +158,45 @@ document.getElementById("btn-logout").addEventListener("click", async () => {
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function carregarCarteiras() {
-  const carteiras = await fetch(`${API}/carteiras`, { credentials: "include" }).then(r => r.json());
+  const res = await fetch(`${API}/carteiras`, {
+    credentials: "include"
+  });
 
-  const grid = document.getElementById("carteirasGrid");
-  const addCard = grid.querySelector(".carteira-add-card");
-  grid.querySelectorAll(".carteira-card").forEach(c => c.remove());
-
-  if (!carteiras.length) {
-    const vazio = document.createElement("div");
-    vazio.className = "empty-wallet";
-    vazio.innerHTML = "<h3>Nenhuma carteira ainda</h3><p>Clique em + para criar sua primeira carteira.</p>";
-    grid.insertBefore(vazio, addCard);
+  if (!res.ok) {
+    console.error("Erro ao carregar carteiras.");
     return;
   }
 
+  const carteiras = await res.json();
+
+  const grid = document.getElementById("carteirasGrid");
+
+  // Remove somente os cards das carteiras existentes
+  grid.querySelectorAll(".carteira-card").forEach(c => c.remove());
+
+  // Se não houver carteiras, mantém somente "Nova carteira"
+  if (!carteiras.length) {
+    return;
+  }
+
+  // Cria as carteiras depois do botão "Nova carteira"
   carteiras.forEach(c => {
     const card = document.createElement("div");
+
     card.className = "card carteira-card";
+
     card.innerHTML = `
       <h3>${c.nome}</h3>
-      <span>${c.qtdAtivos} ${c.qtdAtivos === 1 ? "ativo" : "ativos"}</span>
+      <span>
+        ${c.qtdAtivos} ${c.qtdAtivos === 1 ? "ativo" : "ativos"}
+      </span>
     `;
-    card.addEventListener("click", () => abrirCarteira(c.id, c.nome));
-    grid.insertBefore(card, addCard);
+
+    card.addEventListener("click", () => {
+      abrirCarteira(c.id, c.nome);
+    });
+
+    grid.appendChild(card);
   });
 }
 
