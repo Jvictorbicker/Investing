@@ -187,6 +187,7 @@ public class AuthController : ControllerBase
             usuario.Id,
             usuario.Nome,
             usuario.Email,
+            usuario.Telefone,
             usuario.FotoUrl
         });
     }
@@ -228,7 +229,7 @@ public class AuthController : ControllerBase
             return Unauthorized();
 
         if (!string.IsNullOrWhiteSpace(dto.Nome))
-            usuario.Nome = dto.Nome.Trim();
+    usuario.Nome = dto.Nome.Trim();
 
         if (!string.IsNullOrWhiteSpace(dto.Email))
         {
@@ -244,6 +245,9 @@ public class AuthController : ControllerBase
 
             usuario.Email = email;
         }
+
+        if (!string.IsNullOrWhiteSpace(dto.Telefone))
+            usuario.Telefone = dto.Telefone.Trim();
 
         if (!string.IsNullOrWhiteSpace(dto.NovaSenha))
         {
@@ -271,7 +275,11 @@ public class AuthController : ControllerBase
 
         return Ok(new
         {
-            message = "Perfil atualizado com sucesso."
+            usuario.Id,
+            usuario.Nome,
+            usuario.Email,
+            usuario.Telefone,
+            usuario.FotoUrl
         });
     }
 

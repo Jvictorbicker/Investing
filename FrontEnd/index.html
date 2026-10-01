@@ -1,196 +1,698 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Investify</title>
-  <link rel="stylesheet" href="assets/css/style.css">
-</head>
+
+<html lang="pt-br"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>Investify</title>
+
+<link rel="stylesheet" href="assets/css/style.css"> </head>
+
 <body>
 
 <div class="container">
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <div class="logo">
-      <h2>Investify</h2>
+<!-- ========================================================= SIDEBAR ========================================================== -->
+
+<aside class="sidebar">
+
+<div class="logo">
+  <h2>Investify</h2>
+</div>
+
+<div class="divider"></div>
+
+<nav>
+
+    <a
+        data-page="carteiras"
+        class="active"
+    >
+        Minhas Carteiras
+    </a>
+
+
+    <a
+        data-page="rendimentos"
+    >
+        Meus rendimentos
+    </a>
+
+
+    <a
+        data-page="conta"
+    >
+        Minha conta
+    </a>
+
+</nav>
+
+<!-- USUÁRIO LOGADO -->
+<div class="sidebar-user">
+
+  <div class="sidebar-profile">
+
+    <img
+      id="profile-pic"
+      src="assets/img/image2323.png"
+      alt="Foto de perfil"
+    >
+
+    <span id="usuario-nome">
+      Usuário
+    </span>
+
+  </div>
+
+  <button id="btn-logout">
+    Sair
+  </button>
+
+</div>
+
+</aside>
+
+<!-- ========================================================= CONTEÚDO PRINCIPAL ========================================================== -->
+
+<main class="main">
+
+<!-- =======================================================
+     MINHAS CARTEIRAS
+======================================================== -->
+
+<section id="carteiras" class="page active">
+
+    <header class="header">
+
+        <h1>
+            Minhas <span>Carteiras</span>
+        </h1>
+
+        <p>
+            Crie e gerencie suas carteiras de investimentos.
+        </p>
+
+    </header>
+
+
+    <div
+        class="carteiras-grid"
+        id="carteirasGrid"
+    >
+
+        <!-- =========================================
+             NOVA CARTEIRA
+        ========================================== -->
+
+        <div
+            class="carteira-add-card"
+            id="btn-nova-carteira"
+        >
+
+            <button
+                class="big-add"
+                type="button"
+            >
+                +
+            </button>
+
+            <h3>
+                Nova carteira
+            </h3>
+
+            <p>
+                Criar uma nova carteira
+            </p>
+
+        </div>
+
+
+        <!--
+            AS CARTEIRAS CRIADAS
+            PELO JAVASCRIPT ENTRARÃO AQUI
+        -->
+
     </div>
 
-    <div class="divider"></div>
 
-    <nav>
-      <a data-page="carteiras" class="active">Minhas Carteiras</a>
-      <a data-page="conta">Minha conta</a>
-    </nav>
+    <!-- =============================================
+         MODAL
+    ============================================== -->
 
-    <!-- usuário logado -->
-    <div class="sidebar-user">
-  <div class="sidebar-profile">
-    <img id="profile-pic" src="assets/img/image2323.png" style="width:38px;height:38px;border-radius:50%;object-fit:cover;"/>
-    <span id="usuario-nome"></span>
-  </div>
-  <button id="btn-logout">Sair</button>
-</div>
-  </aside>
+    <div
+        id="modal-carteira"
+        class="modal"
+        style="display:none;"
+    >
 
-  <!-- MAIN -->
-  <main class="main">
+        <div class="modal-content">
 
-    <!-- LISTA DE CARTEIRAS (tela inicial) -->
-    <section id="carteiras" class="page active">
-      <header class="header">
-        <h1>Minhas <span>Carteiras</span></h1>
-        <p>Escolha uma carteira para ver ou adicionar ativos.</p>
-      </header>
+            <button
+                type="button"
+                class="modal-close"
+                id="btn-fechar-modal"
+            >
+                ×
+            </button>
 
-      <div class="carteiras-grid" id="carteirasGrid">
-        <div class="card add-card carteira-add-card">
-          <button class="big-add" id="btn-nova-carteira">+</button>
-        </div>
-      </div>
-    </section>
 
-    <!-- ATIVOS DE UMA CARTEIRA -->
-    <section id="carteira" class="page">
-      <header class="header carteira-detail-header">
-        <button class="btn-voltar" id="btn-voltar-carteiras">&larr; Carteiras</button>
-        <h1 id="carteira-nome-titulo">Carteira</h1>
-        <button class="btn-ver-rendimentos" id="btn-ver-rendimentos">Ver rendimentos</button>
-      </header>
+            <h2>
+                Criar carteira
+            </h2>
 
-      <section class="dashboard">
-        <div class="production">
-          <h2>Seus <span>Investimentos</span></h2>
-          <div class="cards">
-            <div class="card add-card">
-              <button class="big-add" id="btn-add-ativo">+</button>
+            <p>
+                Informe os dados da sua nova carteira.
+            </p>
+
+
+            <div class="form-group">
+
+                <label for="nome-carteira">
+                    Nome da carteira
+                </label>
+
+                <input
+                    type="text"
+                    id="nome-carteira"
+                    placeholder="Ex.: Carteira de longo prazo"
+                >
+
             </div>
-          </div>
+
+
+            <div class="form-group">
+
+                <label for="descricao-carteira">
+                    Descrição
+                </label>
+
+                <textarea
+                    id="descricao-carteira"
+                    rows="3"
+                    placeholder="Ex.: Investimentos para aposentadoria"
+                ></textarea>
+
+            </div>
+
+
+            <div class="modal-actions">
+
+                <button
+                    type="button"
+                    class="btn-cancelar"
+                    id="btn-cancelar-carteira"
+                >
+                    Cancelar
+                </button>
+
+
+                <button
+                    type="button"
+                    class="btn-confirmar"
+                    id="btn-criar-carteira"
+                >
+                    Criar carteira
+                </button>
+
+            </div>
+
         </div>
 
-        <div class="stats">
-          <div class="stat-card">
-            <p>Total em Bolsa de Valores</p>
-            <h2>R$ 0,00</h2>
-          </div>
-        </div>
-      </section>
-    </section>
+    </div>
 
-  <!-- CONTA -->
-<section id="conta" class="page">
-  <header class="header">
-    <h1>Minha <span>Conta</span></h1>
-    <p>Gerencie suas informações pessoais</p>
+</section>
+
+
+
+<!-- =======================================================
+     CARTEIRA INDIVIDUAL
+======================================================== -->
+
+<section
+  id="carteira"
+  class="page"
+>
+
+  <header class="header carteira-detail-header">
+
+    <div>
+
+      <button
+        class="btn-voltar"
+        id="btn-voltar-carteiras"
+        type="button"
+      >
+        ← Carteiras
+      </button>
+
+      <h1 id="carteira-nome-titulo">
+        Carteira
+      </h1>
+
+      <p id="carteira-descricao">
+        Seus investimentos
+      </p>
+
+    </div>
+
+
+    <button
+      class="btn-ver-rendimentos"
+      id="btn-ver-rendimentos"
+      type="button"
+    >
+      Ver rendimentos
+    </button>
+
   </header>
+
+
+  <!-- DASHBOARD DA CARTEIRA -->
+
+  <section class="dashboard">
+
+
+    <!-- INVESTIMENTOS -->
+
+    <div class="production">
+
+      <h2>
+        Seus <span>Investimentos</span>
+      </h2>
+
+
+      <div
+        class="cards"
+        id="ativosGrid"
+      >
+
+        <!-- =============================================
+             ADICIONAR ATIVO
+        ============================================== -->
+
+        <div class="card add-card">
+
+          <button
+            class="big-add"
+            id="btn-add-ativo"
+            type="button"
+          >
+            +
+          </button>
+
+          <h3>
+            Adicionar ativo
+          </h3>
+
+          <p>
+            Adicione uma ação à carteira
+          </p>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- RESUMO -->
+
+    <div class="stats">
+
+      <div class="stat-card">
+
+        <p>
+          Total investido
+        </p>
+
+        <h2 id="total-investido">
+          R$ 0,00
+        </h2>
+
+      </div>
+
+
+      <div class="stat-card">
+
+        <p>
+          Ativos
+        </p>
+
+        <h2 id="quantidade-ativos">
+          0
+        </h2>
+
+      </div>
+
+    </div>
+
+  </section>
+
+</section>
+
+
+
+<!-- =======================================================
+     MINHA CONTA
+======================================================== -->
+
+<section
+  id="conta"
+  class="page"
+>
+
+  <header class="header">
+
+    <h1>
+      Minha <span>Conta</span>
+    </h1>
+
+    <p>
+      Gerencie suas informações pessoais
+    </p>
+
+  </header>
+
 
   <div class="conta-layout">
 
+
     <!-- FOTO -->
+
     <div class="foto-col">
-      <div class="avatar-wrap" id="avatar-wrap">
-        <span class="avatar-initials" id="avatar-initials">JS</span>
+
+      <div
+        class="avatar-wrap"
+        id="avatar-wrap"
+      >
+
+        <span
+          class="avatar-initials"
+          id="avatar-initials"
+        >
+          JS
+        </span>
+
       </div>
-      <button type="button" class="btn-foto" onclick="document.getElementById('input-foto').click(); event.stopPropagation()">
-      Alterar foto
+
+
+      <button
+        type="button"
+        class="btn-foto"
+        onclick="document.getElementById('input-foto').click(); event.stopPropagation()"
+      >
+        Alterar foto
       </button>
-      <input type="file" id="input-foto" accept="image/*" style="display:none">
+
+
+      <input
+        type="file"
+        id="input-foto"
+        accept="image/*"
+        style="display:none"
+      >
+
     </div>
+
 
     <!-- DADOS -->
+
     <div class="dados-col">
+
       <div class="form-group">
-        <label for="campo-nome">Nome completo</label>
-        <input type="text" id="campo-nome" placeholder="Seu nome completo" oninput="atualizarIniciais()">
+
+        <label for="campo-nome">
+          Nome completo
+        </label>
+
+        <input
+          type="text"
+          id="campo-nome"
+          placeholder="Seu nome completo"
+          oninput="atualizarIniciais()"
+        >
+
       </div>
+
+
       <div class="form-group">
-        <label for="campo-email">E-mail</label>
-        <input type="email" id="campo-email" placeholder="seu@email.com">
+
+        <label for="campo-email">
+          E-mail
+        </label>
+
+        <input
+          type="email"
+          id="campo-email"
+          placeholder="seu@email.com"
+        >
+
       </div>
+
+
       <div class="form-group">
-        <label for="campo-tel">Telefone</label>
-        <input type="tel" id="campo-tel" placeholder="(XX) XXXXX-XXXX" oninput="mascaraTel(this)">
+
+        <label for="campo-tel">
+          Telefone
+        </label>
+
+        <input
+          type="tel"
+          id="campo-tel"
+          placeholder="(XX) XXXXX-XXXX"
+          oninput="mascaraTel(this)"
+        >
+
       </div>
+
+
       <div class="form-group">
-        <label for="campo-senha">Senha</label>
+
+        <label for="campo-senha">
+          Senha
+        </label>
+
         <div class="senha-row">
-          <input type="password" id="campo-senha" placeholder="Nova senha">
-          <button class="btn-ver" onclick="toggleSenha()" id="btn-ver">Mostrar</button>
+
+          <input
+            type="password"
+            id="campo-senha"
+            placeholder="Nova senha"
+          >
+
+          <button
+            class="btn-ver"
+            onclick="toggleSenha()"
+            id="btn-ver"
+            type="button"
+          >
+            Mostrar
+          </button>
+
         </div>
+
       </div>
+
+
       <div class="section-divider"></div>
-      <div id="badge-sucesso" class="badge-sucesso">✓ Dados salvos com sucesso!</div>
-      <button class="btn-salvar" onclick="salvar()">Salvar alterações</button>
+
+
+      <div
+        id="badge-sucesso"
+        class="badge-sucesso"
+      >
+        ✓ Dados salvos com sucesso!
+      </div>
+
+
+      <button
+        class="btn-salvar"
+        onclick="salvar()"
+        type="button"
+      >
+        Salvar alterações
+      </button>
+
     </div>
 
   </div>
+
 </section>
 
 
-    <!-- RENDIMENTOS -->
-    <section id="rendimentos" class="page">
 
-  <!-- Cabeçalho -->
+<!-- =======================================================
+     RENDIMENTOS
+======================================================== -->
+
+<section
+  id="rendimentos"
+  class="page"
+>
+
   <div class="header">
-    <button class="btn-voltar" id="btn-voltar-rendimentos">&larr; Voltar para a carteira</button>
-    <h1>Meus <span>Rendimentos</span></h1>
-    <p>Acompanhe o desempenho dos seus ativos em relação ao preço de compra.</p>
+
+    <button
+      class="btn-voltar"
+      id="btn-voltar-rendimentos"
+      type="button"
+    >
+      ← Voltar para a carteira
+    </button>
+
+    <h1>
+      Meus <span>Rendimentos</span>
+    </h1>
+
+    <p>
+      Acompanhe o desempenho dos seus ativos em relação ao preço de compra.
+    </p>
+
   </div>
 
-  <!-- Estado de carregamento -->
-  <div id="loadingState" class="loading-state">
+
+  <!-- LOADING -->
+
+  <div
+    id="loadingState"
+    class="loading-state"
+  >
+
     <div class="spinner"></div>
-    <p>Carregando seus ativos...</p>
+
+    <p>
+      Carregando seus ativos...
+    </p>
+
   </div>
 
-  <!-- Estado de erro -->
-  <div id="errorState" class="error-state" style="display:none;">
-    <p id="errorMsg">Erro ao carregar dados.</p>
-    <button onclick="initRendimentos()">Tentar novamente</button>
+
+  <!-- ERRO -->
+
+  <div
+    id="errorState"
+    class="error-state"
+    style="display:none;"
+  >
+
+    <p id="errorMsg">
+      Erro ao carregar dados.
+    </p>
+
+    <button
+      onclick="initRendimentos()"
+      type="button"
+    >
+      Tentar novamente
+    </button>
+
   </div>
 
-  <!-- Conteúdo principal (oculto até carregar) -->
-  <div id="mainContent" style="display:none;">
 
-    <!-- Cards de resumo -->
-    <div class="rend-stats" id="statsRow"></div>
+  <!-- CONTEÚDO -->
 
-    <!-- Gráfico -->
+  <div
+    id="mainContent"
+    style="display:none;"
+  >
+
+
+    <!-- ESTATÍSTICAS -->
+
+    <div
+      class="rend-stats"
+      id="statsRow"
+    ></div>
+
+
+    <!-- GRÁFICO -->
+
     <div class="chart-card">
+
       <div class="chart-card-header">
-        <h3>Comparativo: preço de compra × valor atual</h3>
+
+        <h3>
+          Comparativo: preço de compra × valor atual
+        </h3>
+
       </div>
 
-      <!-- Filtros -->
-      <div class="toggle-wrap" id="toggleWrap"></div>
 
-      <!-- Legenda -->
+      <div
+        class="toggle-wrap"
+        id="toggleWrap"
+      ></div>
+
+
       <div class="legend">
-        <span><span class="legend-dot" style="background:#8A05BE;"></span>Preço de compra</span>
-        <span><span class="legend-dot" style="background:#1a7a4a;"></span>Lucro</span>
-        <span><span class="legend-dot" style="background:#c0392b;"></span>Prejuízo</span>
+
+        <span>
+          <span
+            class="legend-dot"
+            style="background:#8A05BE;"
+          ></span>
+
+          Preço de compra
+        </span>
+
+
+        <span>
+          <span
+            class="legend-dot"
+            style="background:#1a7a4a;"
+          ></span>
+
+          Lucro
+        </span>
+
+
+        <span>
+          <span
+            class="legend-dot"
+            style="background:#c0392b;"
+          ></span>
+
+          Prejuízo
+        </span>
+
       </div>
+
 
       <div class="chart-wrap">
-        <canvas id="rendChart"
+
+        <canvas
+          id="rendChart"
           role="img"
-          aria-label="Gráfico de barras comparando preço de compra e valor atual de cada ativo">
+          aria-label="Gráfico de barras comparando preço de compra e valor atual de cada ativo"
+        >
           Comparativo de preço de compra versus valor atual dos ativos.
         </canvas>
+
       </div>
+
     </div>
 
-    <!-- Lista de ativos -->
-    <div class="ativo-list" id="ativoList"></div>
+
+    <!-- LISTA -->
+
+    <div
+      class="ativo-list"
+      id="ativoList"
+    ></div>
 
   </div>
 
 </section>
 
-  </main>
+</main>
+
 </div>
 
+
+
+
+<!-- ========================================================= SCRIPTS ========================================================== -->
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+
 <script src="assets/js/script.js"></script>
+
 <script src="assets/js/rendimentos.js"></script>
-</body>
-</html>
+
+</body> </html>
