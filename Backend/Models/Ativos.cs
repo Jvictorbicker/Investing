@@ -14,7 +14,7 @@ public class Ativo
 
     public decimal PrecoCompra { get; set; }
 
-    public int Quantidade { get; set; }
+    public decimal Quantidade { get; set; }
 
     // FK para a carteira
     public long CarteiraId { get; set; }
