@@ -275,25 +275,13 @@ async function carregarCarteiras() {
           ${c.nome}
         </h3>
 
-        <div class="carteira-acoes">
+        <button type="button" class="btn-editar-carteira" title="Alterar nome">
+    <i class="fa-solid fa-pen"></i>
+</button>
 
-          <button
-            type="button"
-            class="btn-editar-carteira"
-            title="Alterar nome"
-          >
-            ✏️
-          </button>
-
-          <button
-            type="button"
-            class="btn-excluir-carteira"
-            title="Excluir carteira"
-          >
-            🗑️
-          </button>
-
-        </div>
+<button type="button" class="btn-excluir-carteira" title="Excluir carteira">
+    <i class="fa-solid fa-trash"></i>
+</button>
 
       </div>
 
@@ -509,61 +497,199 @@ document.getElementById("btn-voltar-rendimentos").addEventListener("click", () =
 // ═══════════════════════════════════════════════════════════════════════════
 
 async function carregarAtivos() {
+
+  // Verifica se existe uma carteira aberta
   if (!carteiraAtual) return;
 
-  const urlBase = `${API}/carteiras/${carteiraAtual.id}/ativos`;
-  const ativos = await fetch(urlBase, { credentials: "include" }).then(r => r.json());
+  const grid = document.getElementById("ativosGrid");
+  const ativosCount = document.getElementById("ativos-count");
 
-  if (!ativos.length) {
-    document.querySelector("#carteira .stat-card h2").textContent = "R$ 0,00";
-    document.querySelectorAll("#carteira .card:not(.add-card)").forEach(c => c.remove());
-    return;
+  // ============================================================
+  // LIMPA OS CARDS ANTIGOS
+  // ============================================================
+
+  grid.querySelectorAll(".ativo-card").forEach(card => {
+    card.remove();
+  });
+
+  // Zera o contador enquanto carrega
+  if (ativosCount) {
+    ativosCount.textContent = "0";
   }
 
-  const tickers = ativos.map(a => a.ticker).join(",");
-  const respostas = await fetch(`${API}/ativos/cotacoes?tickers=${tickers}`, { credentials: "include" }).then(r => r.json());
+  try {
 
-  const precoMap = {};
-  respostas.forEach(resposta => {
-    resposta?.results?.forEach(p => {
-      precoMap[p.symbol] = {
-        preco: p.regularMarketPrice,
-        nome: p.longName || p.shortName || p.symbol
-      };
+    // ============================================================
+    // BUSCAR ATIVOS DA CARTEIRA
+    // ============================================================
+
+    const urlBase = `${API}/carteiras/${carteiraAtual.id}/ativos`;
+
+    const res = await fetch(urlBase, {
+      credentials: "include"
     });
-  });
 
-  const container = document.querySelector("#carteira .cards");
-  const addCard = document.querySelector("#carteira .add-card");
-  container.querySelectorAll(".card:not(.add-card)").forEach(c => c.remove());
+    if (!res.ok) {
+      console.error("Erro ao carregar ativos:", res.status);
+      return;
+    }
 
-  let total = 0;
+    const ativos = await res.json();
 
-  ativos.forEach(ativo => {
-    const info = precoMap[ativo.ticker] || {};
-    const preco = info.preco || 0;
-    const subtotal = preco * ativo.quantidade;
-    total += subtotal;
+    // ============================================================
+    // ATUALIZAR QUANTIDADE DE ATIVOS
+    // ============================================================
 
-    const card = document.createElement("div");
-    card.classList.add("card");
-    card.dataset.id = ativo.id;
-    card.innerHTML = `
-      <h3>${ativo.ticker}</h3>
-      <small>${info.nome || ""}</small>
-      <p>${ativo.quantidade} unid.</p>
-      <strong>R$ ${preco.toFixed(2)}</strong>
-      <span>Total: R$ ${subtotal.toFixed(2)}</span>
-      <div class="btn-group">
-        <button onclick="comprar(${ativo.id})">Comprar</button>
-        <button onclick="vender(${ativo.id})">Vender</button>
-      </div>
-    `;
-    container.insertBefore(card, addCard);
-  });
+    if (ativosCount) {
+      ativosCount.textContent = ativos.length;
+    }
 
-  document.querySelector("#carteira .stat-card h2").textContent =
-    `R$ ${total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+    // ============================================================
+    // SE NÃO POSSUIR ATIVOS
+    // ============================================================
+
+    if (!ativos.length) {
+
+      document.querySelector("#carteira .stat-card h2").textContent =
+        "R$ 0,00";
+
+      return;
+    }
+
+    // ============================================================
+    // BUSCAR COTAÇÕES
+    // ============================================================
+
+    const tickers = ativos
+      .map(a => a.ticker)
+      .join(",");
+
+    const cotacoesRes = await fetch(
+      `${API}/ativos/cotacoes?tickers=${tickers}`,
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!cotacoesRes.ok) {
+      console.error("Erro ao carregar cotações.");
+      return;
+    }
+
+    const respostas = await cotacoesRes.json();
+
+    // ============================================================
+    // MAPA DE PREÇOS
+    // ============================================================
+
+    const precoMap = {};
+
+    respostas.forEach(resposta => {
+
+      resposta?.results?.forEach(p => {
+
+        precoMap[p.symbol] = {
+          preco: p.regularMarketPrice || 0,
+          nome: p.longName || p.shortName || p.symbol
+        };
+
+      });
+
+    });
+
+    // ============================================================
+    // CONTAINER DOS CARDS
+    // ============================================================
+
+    const container = document.querySelector("#carteira .cards");
+    const addCard = document.querySelector("#carteira .add-card");
+
+    // Remove cards antigos
+    container
+      .querySelectorAll(".ativo-card")
+      .forEach(card => card.remove());
+
+    // ============================================================
+    // CALCULAR TOTAL
+    // ============================================================
+
+    let total = 0;
+
+    // ============================================================
+    // CRIAR CARDS
+    // ============================================================
+
+    ativos.forEach(ativo => {
+
+      const info = precoMap[ativo.ticker] || {};
+
+      const preco = info.preco || 0;
+
+      const subtotal =
+        preco * Number(ativo.quantidade);
+
+      total += subtotal;
+
+      const card = document.createElement("div");
+
+      card.classList.add("card", "ativo-card");
+
+      card.dataset.id = ativo.id;
+
+      card.innerHTML = `
+        <h3>${ativo.ticker}</h3>
+
+        <small>
+          ${info.nome || ativo.ticker}
+        </small>
+
+        <p>
+          ${ativo.quantidade} unid.
+        </p>
+
+        <strong>
+          R$ ${preco.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}
+        </strong>
+
+        <span>
+          Total: R$ ${subtotal.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}
+        </span>
+
+        <div class="btn-group">
+          <button onclick="comprar(${ativo.id})">
+            Comprar
+          </button>
+
+          <button onclick="vender(${ativo.id})">
+            Vender
+          </button>
+        </div>
+      `;
+
+      container.insertBefore(card, addCard);
+    });
+
+    // ============================================================
+    // ATUALIZAR TOTAL INVESTIDO
+    // ============================================================
+
+    document.querySelector("#carteira .stat-card h2").textContent =
+      `R$ ${total.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`;
+
+  } catch (erro) {
+
+    console.error("Erro ao carregar ativos:", erro);
+
+  }
 }
 
 // ─── Adicionar ativo (dentro da carteira aberta) ───────────────────────────────
