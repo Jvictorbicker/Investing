@@ -92,7 +92,13 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "..", "FrontEnd")
+    ),
+    RequestPath = ""
+});
 
 app.UseCors("AllowFrontend");
 

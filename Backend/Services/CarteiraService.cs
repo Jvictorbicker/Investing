@@ -1,14 +1,9 @@
 using AtivoApi.Data;
+using AtivoApi.DTOs;
 using AtivoApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AtivoApi.Services;
-
-public record CarteiraResumoDto(
-    long Id,
-    string Nome,
-    int QtdAtivos
-);
 
 public class CarteiraService
 {
@@ -83,10 +78,14 @@ public class CarteiraService
         return carteira;
     }
 
-   public async Task<Carteira?> AlterarNomeAsync(
-    long id,
-    string nome,
-    int usuarioId)
+    // ============================================================
+    // ALTERAR NOME
+    // ============================================================
+
+    public async Task<Carteira?> AlterarNomeAsync(
+        long id,
+        string nome,
+        int usuarioId)
     {
         var carteira = await _context.Carteiras
             .FirstOrDefaultAsync(c =>

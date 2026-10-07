@@ -7,27 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
+using AtivoApi.DTOs;
 
 namespace AtivoApi.Controllers;
-
-public record RegisterDto(
-    string Nome,
-    string Email,
-    string Senha
-);
-
-public record LoginDto(
-    string Email,
-    string Senha
-);
-
-public record AtualizarPerfilDto(
-    string? Nome,
-    string? Email,
-    string? Telefone,
-    string? SenhaAtual,
-    string? NovaSenha
-);
 
 [ApiController]
 [Route("api/auth")]

@@ -1,22 +1,9 @@
 using AtivoApi.Data;
+using AtivoApi.DTOs;
 using AtivoApi.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AtivoApi.Services;
-
-public record BrapiResponse(List<BrapiQuote> Results);
-
-public record BrapiQuote(
-    string Symbol,
-    decimal RegularMarketPrice
-);
-
-public record AtivoComparativoDto(
-    Ativo Ativo,
-    decimal PrecoAtual,
-    decimal VariacaoAbsoluta,
-    decimal VariacaoPercent
-);
 
 public class AtivoService
 {

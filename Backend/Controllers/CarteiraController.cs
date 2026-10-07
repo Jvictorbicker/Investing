@@ -2,6 +2,7 @@ using System.Security.Claims;
 using AtivoApi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using AtivoApi.DTOs;
 
 namespace AtivoApi.Controllers;
 
@@ -26,10 +27,6 @@ public class CarteiraController : ControllerBase
 
         return id;
     }
-
-    public record CriarCarteiraRequest(string Nome);
-
-    public record AlterarCarteiraRequest(string Nome);
 
     // ============================================================
     // LISTAR CARTEIRAS
