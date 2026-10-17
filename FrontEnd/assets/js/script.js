@@ -752,6 +752,16 @@ async function vender(id) {
   carregarAtivos();
 }
 
+document.addEventListener('click', (e) => {
+    const card = e.target.closest('.card.add-card');
+    if (!card) return;
+
+    // se clicou direto no botão "+", o handler original dele já cuida
+    if (e.target.closest('#btn-add-ativo')) return;
+
+    document.getElementById('btn-add-ativo').click();
+});
+
 // ─── Navegação (Minhas Carteiras / Minha conta) ────────────────────────────────
 document.querySelectorAll("nav a").forEach(link => {
   link.addEventListener("click", () => {

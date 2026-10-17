@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Jvict\\Desktop\\Investing\\Backend\\Investing.csproj": {}
+    "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Jvict\\Desktop\\Investing\\Backend\\Investing.csproj": {
+    "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Jvict\\Desktop\\Investing\\Backend\\Investing.csproj",
+        "projectUniqueName": "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj",
         "projectName": "Investing",
-        "projectPath": "C:\\Users\\Jvict\\Desktop\\Investing\\Backend\\Investing.csproj",
-        "packagesPath": "C:\\Users\\Jvict\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Jvict\\Desktop\\Investing\\Backend\\obj\\",
+        "projectPath": "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj",
+        "packagesPath": "C:\\Users\\T-GAMER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Jvict\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\T-GAMER\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
