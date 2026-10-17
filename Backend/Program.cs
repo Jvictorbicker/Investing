@@ -92,6 +92,8 @@ builder.Services.AddControllers()
 
 var app = builder.Build();
 
+app.UseStaticFiles();
+
 app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
