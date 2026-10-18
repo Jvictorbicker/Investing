@@ -2063,3 +2063,87 @@ body {
     visibility: visible !important;
     cursor: pointer !important;
 }
+/* =========================================================
+   CABEÇALHO DA CARTEIRA INDIVIDUAL
+========================================================= */
+
+.carteira-detail-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+
+  background: #ffffff;
+  border: 1px solid #e6e6e6;
+  border-radius: 20px;
+  padding: 26px 30px;
+}
+
+/* o título vem do nome da carteira, então forço a 1ª letra maiúscula */
+.carteira-detail-header h1::first-letter {
+  text-transform: uppercase;
+}
+
+/* BOTÃO VOLTAR (também vale para a tela de rendimentos) */
+.btn-voltar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  margin: 0 0 14px -10px;
+  padding: 6px 12px;
+
+  background: transparent;
+  border: none;
+  border-radius: 999px;
+
+  color: #777;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  transition: background 0.2s, color 0.2s;
+}
+
+.btn-voltar:hover {
+  background: #f3e6fa;
+  color: #8A05BE;
+}
+
+/* BOTÃO VER RENDIMENTOS */
+.btn-ver-rendimentos {
+  padding: 12px 24px;
+
+  background: #8A05BE;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+
+  transition: background 0.2s, transform 0.2s;
+}
+
+.btn-ver-rendimentos:hover {
+  background: #6a0392;
+  transform: translateY(-1px);
+}
+
+.btn-voltar:focus-visible,
+.btn-ver-rendimentos:focus-visible {
+  outline: 3px solid rgba(138, 5, 190, 0.35);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .carteira-detail-header {
+    padding: 20px 18px;
+  }
+
+  .btn-ver-rendimentos {
+    width: 100%;
+  }
+}

@@ -15,6 +15,171 @@ function mostrarPagina(id) {
   if (navLink) navLink.classList.add("active");
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// MODAL GENÉRICO (substitui os prompt())
+// Monta um card usando as classes que já existem no style.css
+//
+// abrirModal({
+//   titulo, descricao, textoConfirmar,
+//   campos: [{ name, label, tipo, placeholder, valor, min, autocomplete }],
+//   onConfirmar: async (valores) => { ... }
+// })
+//
+// onConfirmar pode retornar um texto de erro (fica no card, que continua
+// aberto) ou nada/null (o card fecha).
+// ═══════════════════════════════════════════════════════════════════════════
+function abrirModal({
+  titulo,
+  descricao = "",
+  campos = [],
+  textoConfirmar = "Confirmar",
+  onConfirmar
+}) {
+
+  const overlay = document.createElement("div");
+  overlay.className = "modal";
+  overlay.style.display = "flex";
+
+  const content = document.createElement("div");
+  content.className = "modal-content";
+
+  const btnX = document.createElement("button");
+  btnX.type = "button";
+  btnX.className = "modal-close";
+  btnX.textContent = "×";
+
+  const h2 = document.createElement("h2");
+  h2.textContent = titulo;
+
+  content.append(btnX, h2);
+
+  if (descricao) {
+    const p = document.createElement("p");
+    p.textContent = descricao;
+    content.appendChild(p);
+  }
+
+  // ── Campos ──
+  const inputs = [];
+
+  campos.forEach((campo, i) => {
+    const id = `modal-campo-${i}`;
+
+    const grupo = document.createElement("div");
+    grupo.className = "form-group";
+
+    const label = document.createElement("label");
+    label.htmlFor = id;
+    label.textContent = campo.label;
+
+    const input = document.createElement("input");
+    input.id = id;
+    input.type = campo.tipo || "text";
+    input.placeholder = campo.placeholder || "";
+    input.value = campo.valor ?? "";
+    input.autocomplete = campo.autocomplete || "off";
+    if (campo.min !== undefined) input.min = campo.min;
+
+    grupo.append(label, input);
+    content.appendChild(grupo);
+    inputs.push(input);
+  });
+
+  // ── Área de erro (classe .erro já existe no CSS) ──
+  const erro = document.createElement("div");
+  erro.className = "erro";
+  erro.style.display = "none";
+  erro.style.whiteSpace = "pre-line";
+
+  // ── Botões ──
+  const acoes = document.createElement("div");
+  acoes.className = "modal-actions";
+
+  const btnCancelar = document.createElement("button");
+  btnCancelar.type = "button";
+  btnCancelar.className = "btn-cancelar";
+  btnCancelar.textContent = "Cancelar";
+
+  const btnOk = document.createElement("button");
+  btnOk.type = "button";
+  btnOk.className = "btn-confirmar";
+  btnOk.textContent = textoConfirmar;
+
+  acoes.append(btnCancelar, btnOk);
+  content.append(erro, acoes);
+  overlay.appendChild(content);
+  document.body.appendChild(overlay);
+
+  // ── Comportamento ──
+  function fechar() {
+    document.removeEventListener("keydown", aoTeclar);
+    overlay.remove();
+  }
+
+  function aoTeclar(e) {
+    if (e.key === "Escape") fechar();
+  }
+
+  function mostrarErro(texto) {
+    erro.textContent = texto;
+    erro.style.display = "block";
+  }
+
+  async function confirmar() {
+    const valores = {};
+
+    campos.forEach((campo, i) => {
+      const valor = inputs[i].value;
+      valores[campo.name] = campo.tipo === "password" ? valor : valor.trim();
+    });
+
+    erro.style.display = "none";
+    btnOk.disabled = true;
+    btnOk.textContent = "Aguarde…";
+
+    try {
+      const mensagem = await onConfirmar(valores);
+
+      if (mensagem) {
+        mostrarErro(mensagem);
+        return;
+      }
+
+      fechar();
+
+    } catch (err) {
+      mostrarErro("Falha de conexão. Tente novamente.");
+
+    } finally {
+      btnOk.disabled = false;
+      btnOk.textContent = textoConfirmar;
+    }
+  }
+
+  btnX.addEventListener("click", fechar);
+  btnCancelar.addEventListener("click", fechar);
+  btnOk.addEventListener("click", confirmar);
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) fechar();
+  });
+
+  inputs.forEach(input => {
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") confirmar();
+    });
+  });
+
+  document.addEventListener("keydown", aoTeclar);
+
+   if (inputs[0]) {
+    inputs[0].focus();
+    inputs[0].select();
+  } else {
+    btnOk.focus();
+  }
+}
+
 // ─── Proteção de rota ─────────────────────────────────────────────────────────
 async function verificarAuth() {
 
@@ -116,19 +281,9 @@ async function carregarPerfil() {
   atualizarIniciais();
 }
 
-// ─── Perfil: salvar ───────────────────────────────────────────────────────────
-async function salvar() {
-  const nome = document.getElementById("campo-nome").value.trim();
-  const email = document.getElementById("campo-email").value.trim();
-  const telefone = document.getElementById("campo-tel").value.trim();
-  const novaSenha = document.getElementById("campo-senha").value;
-
-  let senhaAtual = null;
-  if (novaSenha) {
-    senhaAtual = prompt("Digite sua senha atual para confirmar a alteração:");
-    if (senhaAtual === null) return;
-  }
-
+// ─── Perfil: enviar para a API ────────────────────────────────────────────────
+// Retorna null se deu certo, ou um texto com o erro.
+async function enviarPerfil({ nome, email, telefone, senhaAtual, novaSenha }) {
   const btn = document.querySelector(".btn-salvar");
   btn.disabled = true;
   btn.textContent = "Salvando…";
@@ -149,16 +304,59 @@ async function salvar() {
       const badge = document.getElementById("badge-sucesso");
       badge.style.display = "block";
       setTimeout(() => (badge.style.display = "none"), 3000);
-    } else {
-      const erros = await res.json().catch(() => ["Erro desconhecido."]);
-      alert("Erro ao salvar:\n" + (Array.isArray(erros) ? erros.join("\n") : JSON.stringify(erros)));
+
+      return null;
     }
+
+    const erros = await res.json().catch(() => ["Erro desconhecido."]);
+    return "Erro ao salvar:\n" + (Array.isArray(erros) ? erros.join("\n") : JSON.stringify(erros));
+
   } catch (err) {
-    alert("Falha de conexão: " + err.message);
+    return "Falha de conexão: " + err.message;
+
   } finally {
     btn.disabled = false;
     btn.textContent = "Salvar alterações";
   }
+}
+
+// ─── Perfil: salvar ───────────────────────────────────────────────────────────
+async function salvar() {
+  const nome = document.getElementById("campo-nome").value.trim();
+  const email = document.getElementById("campo-email").value.trim();
+  const telefone = document.getElementById("campo-tel").value.trim();
+  const novaSenha = document.getElementById("campo-senha").value;
+
+  // Sem troca de senha: salva direto
+  if (!novaSenha) {
+    const erro = await enviarPerfil({
+      nome, email, telefone, senhaAtual: null, novaSenha
+    });
+
+    if (erro) alert(erro);
+    return;
+  }
+
+  // Com troca de senha: pede a senha atual num card
+  abrirModal({
+    titulo: "Confirmar alteração",
+    descricao: "Digite sua senha atual para confirmar a alteração.",
+    textoConfirmar: "Confirmar",
+    campos: [
+      {
+        name: "senhaAtual",
+        label: "Senha atual",
+        tipo: "password",
+        placeholder: "Sua senha atual",
+        autocomplete: "current-password"
+      }
+    ],
+    onConfirmar: async ({ senhaAtual }) => {
+      if (!senhaAtual) return "Informe a senha atual.";
+
+      return enviarPerfil({ nome, email, telefone, senhaAtual, novaSenha });
+    }
+  });
 }
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
@@ -338,66 +536,73 @@ async function carregarCarteiras() {
     });
 
     // ============================================================
-    // EDITAR
+    // EDITAR (card em vez de prompt)
     // ============================================================
 
     const btnEditar =
       card.querySelector(".btn-editar-carteira");
 
-    btnEditar.addEventListener("click", async (event) => {
+    btnEditar.addEventListener("click", (event) => {
 
       event.stopPropagation();
 
-      const novoNome = prompt(
-        "Digite o novo nome da carteira:",
-        c.nome
-      );
+      abrirModal({
+        titulo: "Alterar nome da carteira",
+        descricao: "Digite o novo nome da carteira.",
+        textoConfirmar: "Salvar",
+        campos: [
+          {
+            name: "nome",
+            label: "Nome da carteira",
+            placeholder: "Ex.: Carteira de longo prazo",
+            valor: c.nome
+          }
+        ],
+        onConfirmar: async ({ nome }) => {
 
-      if (
-        novoNome === null ||
-        !novoNome.trim()
-      ) {
-        return;
-      }
+          if (!nome) {
+            return "Informe o nome da carteira.";
+          }
 
-      const nome = novoNome.trim();
+          // Nada mudou: só fecha o card
+          if (nome === c.nome) {
+            return null;
+          }
 
-      if (nome === c.nome) {
-        return;
-      }
+          const resposta = await fetch(
+            `${API}/carteiras/${c.id}`,
+            {
+              method: "PUT",
 
-      const resposta = await fetch(
-        `${API}/carteiras/${c.id}`,
-        {
-          method: "PUT",
+              headers: {
+                "Content-Type": "application/json"
+              },
 
-          headers: {
-            "Content-Type": "application/json"
-          },
+              credentials: "include",
 
-          credentials: "include",
+              body: JSON.stringify({
+                nome: nome
+              })
+            }
+          );
 
-          body: JSON.stringify({
-            nome: nome
-          })
+          if (!resposta.ok) {
+
+            const erro =
+              await resposta.text();
+
+            return (
+              erro ||
+              "Não foi possível alterar o nome da carteira."
+            );
+          }
+
+          // Atualiza a lista
+          carregarCarteiras();
+
+          return null;
         }
-      );
-
-      if (!resposta.ok) {
-
-        const erro =
-          await resposta.text();
-
-        alert(
-          erro ||
-          "Não foi possível alterar o nome da carteira."
-        );
-
-        return;
-      }
-
-      // Atualiza a lista
-      carregarCarteiras();
+      });
 
     });
 
@@ -465,23 +670,99 @@ async function carregarCarteiras() {
   }
 }
 
-document.getElementById("btn-nova-carteira").addEventListener("click", async () => {
-  const nome = prompt("Nome da nova carteira (ex: Renda Variável):");
-  if (!nome || !nome.trim()) return;
+// ─── Modal: nova carteira (usa o card #modal-carteira do HTML) ────────────────
+const modalCarteira = document.getElementById("modal-carteira");
+const inputNomeCarteira = document.getElementById("nome-carteira");
+const inputDescCarteira = document.getElementById("descricao-carteira");
+const btnCriarCarteira = document.getElementById("btn-criar-carteira");
 
-  const res = await fetch(`${API}/carteiras`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ nome: nome.trim() })
-  });
+function mostrarErroModal(texto) {
+  let erro = modalCarteira.querySelector(".erro");
+  if (!erro) {
+    erro = document.createElement("div");
+    erro.className = "erro";
+    modalCarteira.querySelector(".modal-actions").before(erro);
+  }
+  erro.textContent = texto;
+}
 
-  if (!res.ok) {
-    alert("Não foi possível criar a carteira.");
+function limparErroModal() {
+  modalCarteira.querySelector(".erro")?.remove();
+}
+
+function abrirModalCarteira() {
+  inputNomeCarteira.value = "";
+  inputDescCarteira.value = "";
+  limparErroModal();
+  modalCarteira.style.display = "flex";
+  inputNomeCarteira.focus();
+}
+
+function fecharModalCarteira() {
+  modalCarteira.style.display = "none";
+}
+
+async function criarCarteira() {
+  const nome = inputNomeCarteira.value.trim();
+  const descricao = inputDescCarteira.value.trim();
+
+  if (!nome) {
+    mostrarErroModal("Informe o nome da carteira.");
+    inputNomeCarteira.focus();
     return;
   }
 
-  carregarCarteiras();
+  limparErroModal();
+  btnCriarCarteira.disabled = true;
+  btnCriarCarteira.textContent = "Criando…";
+
+  try {
+    const res = await fetch(`${API}/carteiras`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ nome, descricao })
+    });
+
+    if (!res.ok) {
+      const texto = await res.text().catch(() => "");
+      mostrarErroModal(texto || "Não foi possível criar a carteira.");
+      return;
+    }
+
+    fecharModalCarteira();
+    carregarCarteiras();
+
+  } catch (err) {
+    mostrarErroModal("Falha de conexão. Tente novamente.");
+  } finally {
+    btnCriarCarteira.disabled = false;
+    btnCriarCarteira.textContent = "Criar carteira";
+  }
+}
+
+// abrir
+document.getElementById("btn-nova-carteira")
+  .addEventListener("click", abrirModalCarteira);
+
+// fechar (X, Cancelar, clique fora, Esc)
+document.getElementById("btn-fechar-modal")
+  .addEventListener("click", fecharModalCarteira);
+document.getElementById("btn-cancelar-carteira")
+  .addEventListener("click", fecharModalCarteira);
+modalCarteira.addEventListener("click", (e) => {
+  if (e.target === modalCarteira) fecharModalCarteira();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && modalCarteira.style.display === "flex") {
+    fecharModalCarteira();
+  }
+});
+
+// criar (botão e Enter no campo de nome)
+btnCriarCarteira.addEventListener("click", criarCarteira);
+inputNomeCarteira.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") criarCarteira();
 });
 
 function abrirCarteira(id, nome) {
@@ -706,27 +987,60 @@ async function carregarAtivos() {
   }
 }
 
-// ─── Adicionar ativo (dentro da carteira aberta) ───────────────────────────────
-document.getElementById("btn-add-ativo").addEventListener("click", async () => {
+// ─── Adicionar ativo (card em vez de prompt) ──────────────────────────────────
+document.getElementById("btn-add-ativo").addEventListener("click", () => {
   if (!carteiraAtual) return;
 
-  const ticker = prompt("Ticker do ativo (ex: PETR4):");
-  if (!ticker) return;
+  abrirModal({
+    titulo: "Adicionar ativo",
+    descricao: "Informe o ticker e a quantidade que deseja adicionar à carteira.",
+    textoConfirmar: "Adicionar",
+    campos: [
+      {
+        name: "ticker",
+        label: "Ticker do ativo",
+        placeholder: "Ex.: PETR4"
+      },
+      {
+        name: "quantidade",
+        label: "Quantidade de unidades",
+        tipo: "number",
+        placeholder: "Ex.: 10",
+        min: 1
+      }
+    ],
+    onConfirmar: async ({ ticker, quantidade }) => {
 
-  const qtdStr = prompt("Quantidade de unidades:");
-  if (!qtdStr) return;
+      if (!ticker) {
+        return "Informe o ticker do ativo.";
+      }
 
-  const quantidade = parseInt(qtdStr);
-  if (isNaN(quantidade)) return;
+      const qtd = parseInt(quantidade, 10);
 
-  await fetch(`${API}/carteiras/${carteiraAtual.id}/ativos`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ ticker: ticker.toUpperCase().trim(), quantidade })
+      if (isNaN(qtd) || qtd < 1) {
+        return "Informe uma quantidade válida (mínimo 1).";
+      }
+
+      const res = await fetch(`${API}/carteiras/${carteiraAtual.id}/ativos`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          ticker: ticker.toUpperCase(),
+          quantidade: qtd
+        })
+      });
+
+      if (!res.ok) {
+        const erro = await res.text().catch(() => "");
+        return erro || "Não foi possível adicionar o ativo.";
+      }
+
+      carregarAtivos();
+
+      return null;
+    }
   });
-
-  carregarAtivos();
 });
 
 // ─── Comprar ──────────────────────────────────────────────────────────────────
@@ -870,48 +1184,53 @@ async function carregarSolicitacoesCadastro() {
     }
 }
 
-async function aprovarCadastro(id) {
-    if (!confirm("Deseja aceitar esta solicitação de cadastro?")) {
-        return;
-    }
-
-    const res = await fetch(
+function aprovarCadastro(id) {
+  abrirModal({
+    titulo: "Aceitar solicitação",
+    descricao: "Deseja aceitar esta solicitação de cadastro?",
+    textoConfirmar: "Aceitar",
+    onConfirmar: async () => {
+      const res = await fetch(
         `${API}/admin/cadastros/${id}/aprovar`,
         {
-            method: "POST",
-            credentials: "include"
+          method: "POST",
+          credentials: "include"
         }
-    );
+      );
 
-    if (!res.ok) {
-        alert("Não foi possível aceitar a solicitação.");
-        return;
+      if (!res.ok) {
+        return "Não foi possível aceitar a solicitação.";
+      }
+
+      await carregarSolicitacoesCadastro();
+      return null;
     }
-
-    await carregarSolicitacoesCadastro();
+  });
 }
 
-async function rejeitarCadastro(id) {
-    if (!confirm("Deseja recusar esta solicitação de cadastro?")) {
-        return;
-    }
-
-    const res = await fetch(
+function rejeitarCadastro(id) {
+  abrirModal({
+    titulo: "Recusar solicitação",
+    descricao: "Deseja recusar esta solicitação de cadastro?",
+    textoConfirmar: "Recusar",
+    onConfirmar: async () => {
+      const res = await fetch(
         `${API}/admin/cadastros/${id}/rejeitar`,
         {
-            method: "POST",
-            credentials: "include"
+          method: "POST",
+          credentials: "include"
         }
-    );
+      );
 
-    if (!res.ok) {
-        alert("Não foi possível recusar a solicitação.");
-        return;
+      if (!res.ok) {
+        return "Não foi possível recusar a solicitação.";
+      }
+
+      await carregarSolicitacoesCadastro();
+      return null;
     }
-
-    await carregarSolicitacoesCadastro();
+  });
 }
-
 
 // ─── Iniciar ──────────────────────────────────────────────────────────────────
 verificarAuth().then(user => {

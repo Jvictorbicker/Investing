@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\Victor\\Desktop\\Investing\\Backend\\Investing.csproj": {}
+    "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj": {}
   },
   "projects": {
-    "C:\\Users\\Victor\\Desktop\\Investing\\Backend\\Investing.csproj": {
+    "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\Victor\\Desktop\\Investing\\Backend\\Investing.csproj",
+        "projectUniqueName": "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj",
         "projectName": "Investing",
-        "projectPath": "C:\\Users\\Victor\\Desktop\\Investing\\Backend\\Investing.csproj",
-        "packagesPath": "C:\\Users\\Victor\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\Victor\\Desktop\\Investing\\Backend\\obj\\",
+        "projectPath": "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\Investing.csproj",
+        "packagesPath": "C:\\Users\\T-GAMER\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\T-GAMER\\OneDrive\\Área de Trabalho\\Investing\\Backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\Victor\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\T-GAMER\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -96,7 +96,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.402/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.401/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
