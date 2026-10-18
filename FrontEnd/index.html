@@ -490,14 +490,36 @@
         ✓ Dados salvos com sucesso!
       </div>
 
-
       <button
-        class="btn-salvar"
-        onclick="salvar()"
-        type="button"
-      >
-        Salvar alterações
-      </button>
+  class="btn-salvar"
+  onclick="salvar()"
+  type="button"
+>
+  Salvar alterações
+</button>
+
+<!-- Acesso administrativo às solicitações -->
+<div id="admin-solicitacoes-area" style="display: none; margin-top: 15px;">
+  <button
+    class="btn-salvar"
+    id="btn-ver-solicitacoes"
+    type="button"
+  >
+    Ver solicitações de cadastro
+  </button>
+</div>
+
+<!-- Área onde as solicitações serão exibidas -->
+<div
+  id="solicitacoes-cadastro"
+  style="display: none; margin-top: 20px;"
+>
+  <h2>Solicitações de cadastro</h2>
+
+  <p id="mensagem-solicitacoes"></p>
+
+  <div id="lista-solicitacoes"></div>
+</div>
 
     </div>
 

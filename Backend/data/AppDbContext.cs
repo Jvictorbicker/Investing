@@ -1,3 +1,4 @@
+
 using Microsoft.EntityFrameworkCore;
 using AtivoApi.Models;
 
@@ -14,6 +15,8 @@ public class AppDbContext : DbContext
     public DbSet<Carteira> Carteiras { get; set; }
     public DbSet<Ativo> Ativos { get; set; }
 
+    public DbSet<SolicitacaoCadastro> SolicitacoesCadastro { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -27,5 +30,12 @@ public class AppDbContext : DbContext
             .HasMany(c => c.Ativos)
             .WithOne(a => a.Carteira)
             .HasForeignKey(a => a.CarteiraId);
+
+        // Informa ao EF Core que a tabela possui triggers.
+        builder.Entity<SolicitacaoCadastro>()
+            .ToTable("SolicitacaoCadastro", "dbo", table =>
+            {
+                table.HasTrigger("TR_SolicitacaoCadastro_Auditoria");
+            });
     }
 }

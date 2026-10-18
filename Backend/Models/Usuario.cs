@@ -20,4 +20,6 @@ public class Usuario
     public string? FotoUrl { get; set; }
 
     public ICollection<Carteira> Carteiras { get; set; } = new List<Carteira>();
+
+    public bool IsAdmin { get; set; }
 }

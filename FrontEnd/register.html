@@ -81,9 +81,14 @@
       });
 
       if (res.ok) {
-        window.location.href = "login.html?criada=1";
-        return;
-      }
+  const data = await res.json().catch(() => ({}));
+
+  alert(data.mensagem ||
+    "Solicitação enviada para aprovação.");
+
+  window.location.href = "login.html";
+  return;
+}
 
       const data = await res.json().catch(() => null);
       erro.textContent = data?.[0]?.description || "Erro ao criar conta.";

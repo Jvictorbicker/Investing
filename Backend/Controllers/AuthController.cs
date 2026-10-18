@@ -29,113 +29,109 @@ public class AuthController : ControllerBase
     // ============================================================
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterDto dto)
+public async Task<IActionResult> Register(RegisterDto dto)
+{
+    if (string.IsNullOrWhiteSpace(dto.Nome) ||
+        string.IsNullOrWhiteSpace(dto.Email) ||
+        string.IsNullOrWhiteSpace(dto.Senha))
     {
-        if (string.IsNullOrWhiteSpace(dto.Nome) ||
-            string.IsNullOrWhiteSpace(dto.Email) ||
-            string.IsNullOrWhiteSpace(dto.Senha))
-        {
-            return BadRequest("Nome, e-mail e senha são obrigatórios.");
-        }
-
-        var email = dto.Email.Trim().ToLower();
-
-        var existe = await _context.Usuarios
-            .AnyAsync(u => u.Email == email);
-
-        if (existe)
-            return BadRequest("E-mail já cadastrado.");
-
-        var usuario = new Usuario
-        {
-            Nome = dto.Nome.Trim(),
-            Email = email
-        };
-
-        usuario.Senha = _passwordHasher.HashPassword(
-            usuario,
-            dto.Senha
-        );
-
-        _context.Usuarios.Add(usuario);
-
-        await _context.SaveChangesAsync();
-
-        return Ok(new
-        {
-            usuario.Id,
-            usuario.Nome,
-            usuario.Email
-        });
+        return BadRequest("Nome, e-mail e senha são obrigatórios.");
     }
+
+    var email = dto.Email.Trim().ToLowerInvariant();
+
+    var usuarioExiste = await _context.Usuarios
+        .AnyAsync(u => u.Email.ToLower() == email);
+
+    var solicitacaoExiste = await _context.SolicitacoesCadastro
+        .AnyAsync(s =>
+            s.Email == email &&
+            s.Status == "Pendente");
+
+    if (usuarioExiste || solicitacaoExiste)
+        return BadRequest("Este e-mail já está cadastrado ou possui uma solicitação pendente.");
+
+    var usuarioTemporario = new Usuario
+    {
+        Nome = dto.Nome.Trim(),
+        Email = email
+    };
+
+    var hash = _passwordHasher.HashPassword(
+        usuarioTemporario,
+        dto.Senha
+    );
+
+    var solicitacao = new SolicitacaoCadastro
+    {
+        Nome = dto.Nome.Trim(),
+        Email = email,
+        SenhaHash = hash,
+        Status = "Pendente",
+        DataSolicitacao = DateTime.UtcNow
+    };
+
+    _context.SolicitacoesCadastro.Add(solicitacao);
+    await _context.SaveChangesAsync();
+
+    return Accepted(new
+    {
+        mensagem = "Solicitação enviada. Aguarde a aprovação de um administrador."
+    });
+}
 
     // ============================================================
     // LOGIN
     // ============================================================
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login(LoginDto dto)
+public async Task<IActionResult> Login(LoginDto dto)
+{
+    var email = dto.Email.Trim().ToLower();
+
+    var usuario = await _context.Usuarios
+        .FirstOrDefaultAsync(u => u.Email == email);
+
+    if (usuario is null)
+        return Unauthorized("E-mail ou senha inválidos.");
+
+    var resultado = _passwordHasher.VerifyHashedPassword(
+        usuario,
+        usuario.Senha,
+        dto.Senha
+    );
+
+    if (resultado == PasswordVerificationResult.Failed)
+        return Unauthorized("E-mail ou senha inválidos.");
+
+    var claims = new List<Claim>
     {
-        var email = dto.Email.Trim().ToLower();
+        new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+        new Claim(ClaimTypes.Name, usuario.Nome),
+        new Claim(ClaimTypes.Email, usuario.Email)
+    };
 
-        var usuario = await _context.Usuarios
-            .FirstOrDefaultAsync(u => u.Email == email);
+    var identity = new ClaimsIdentity(
+        claims,
+        CookieAuthenticationDefaults.AuthenticationScheme);
 
-        if (usuario is null)
-            return Unauthorized("E-mail ou senha inválidos.");
-
-        var resultado = _passwordHasher.VerifyHashedPassword(
-            usuario,
-            usuario.Senha,
-            dto.Senha
-        );
-
-        if (resultado == PasswordVerificationResult.Failed)
-            return Unauthorized("E-mail ou senha inválidos.");
-
-        var claims = new List<Claim>
+    await HttpContext.SignInAsync(
+        CookieAuthenticationDefaults.AuthenticationScheme,
+        new ClaimsPrincipal(identity),
+        new AuthenticationProperties
         {
-            new Claim(
-                ClaimTypes.NameIdentifier,
-                usuario.Id.ToString()
-            ),
-
-            new Claim(
-                ClaimTypes.Name,
-                usuario.Nome
-            ),
-
-            new Claim(
-                ClaimTypes.Email,
-                usuario.Email
-            )
-        };
-
-        var identity = new ClaimsIdentity(
-            claims,
-            CookieAuthenticationDefaults.AuthenticationScheme
-        );
-
-        var principal = new ClaimsPrincipal(identity);
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            principal,
-            new AuthenticationProperties
-            {
-                IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
-            }
-        );
-
-        return Ok(new
-        {
-            usuario.Id,
-            usuario.Nome,
-            usuario.Email
+            IsPersistent = true,
+            ExpiresUtc = DateTimeOffset.UtcNow.AddHours(8)
         });
-    }
 
+    return Ok(new
+    {
+        usuario.Id,
+        usuario.Nome,
+        usuario.Email,
+        usuario.IsAdmin
+    });
+}
     // ============================================================
     // LOGOUT
     // ============================================================
@@ -156,24 +152,24 @@ public class AuthController : ControllerBase
     // ============================================================
 
     [Authorize]
-    [HttpGet("me")]
-    public async Task<IActionResult> Me()
+[HttpGet("me")]
+public async Task<IActionResult> Me()
+{
+    var usuario = await ObterUsuarioLogado();
+
+    if (usuario is null)
+        return Unauthorized();
+
+    return Ok(new
     {
-        var usuario = await ObterUsuarioLogado();
-
-        if (usuario is null)
-            return Unauthorized();
-
-        return Ok(new
-        {
-            usuario.Id,
-            usuario.Nome,
-            usuario.Email,
-            usuario.Telefone,
-            usuario.FotoUrl
-        });
-    }
-
+        usuario.Id,
+        usuario.Nome,
+        usuario.Email,
+        usuario.Telefone,
+        usuario.FotoUrl,
+        usuario.IsAdmin
+    });
+}
     // ============================================================
     // PERFIL
     // ============================================================

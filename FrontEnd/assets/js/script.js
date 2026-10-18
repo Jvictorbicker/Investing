@@ -17,14 +17,28 @@ function mostrarPagina(id) {
 
 // ─── Proteção de rota ─────────────────────────────────────────────────────────
 async function verificarAuth() {
-  const res = await fetch(`${API}/auth/me`, { credentials: "include" });
-  if (!res.ok) {
-    window.location.href = "login.html";
-    return null;
-  }
-  const user = await res.json();
-  document.getElementById("usuario-nome").textContent = user.nome;
-  return user;
+
+    const res = await fetch(`${API}/auth/me`, {
+        credentials: "include"
+    });
+
+    if (!res.ok) {
+        window.location.href = "login.html";
+        return null;
+    }
+
+    const user = await res.json();
+
+    document.getElementById("usuario-nome").textContent = user.nome;
+
+    const areaAdmin = document.getElementById("admin-solicitacoes-area");
+
+    if (areaAdmin) {
+        areaAdmin.style.display =
+            user.isAdmin ? "block" : "none";
+    }
+
+    return user;
 }
 
 // ─── Foto de perfil ───────────────────────────────────────────────────────────
@@ -769,6 +783,135 @@ document.querySelectorAll("nav a").forEach(link => {
     if (link.dataset.page === "carteiras") carregarCarteiras();
   });
 });
+
+
+document.getElementById("btn-ver-solicitacoes")
+?.addEventListener("click", carregarSolicitacoesCadastro);
+
+async function carregarSolicitacoesCadastro() {
+
+    const area = document.getElementById("solicitacoes-cadastro");
+    const msg = document.getElementById("mensagem-solicitacoes");
+    const lista = document.getElementById("lista-solicitacoes");
+
+    area.style.display = "block";
+    lista.innerHTML = "";
+    msg.textContent = "Carregando...";
+
+    try {
+
+        const res = await fetch(
+            `${API}/admin/cadastros/pendentes`,
+            {
+                credentials: "include"
+            }
+        );
+
+        if (res.status === 403) {
+            msg.textContent = "Acesso restrito.";
+            return;
+        }
+
+        if (!res.ok) {
+            msg.textContent = "Erro ao carregar.";
+            return;
+        }
+
+        const solicitacoes = await res.json();
+
+        if (!solicitacoes.length) {
+            msg.textContent = "Nenhuma solicitação pendente.";
+            return;
+        }
+
+        msg.textContent = "";
+
+        solicitacoes.forEach(s => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.style.marginTop = "15px";
+    card.style.padding = "20px";
+
+    const nome = document.createElement("h3");
+    nome.textContent = s.nome;
+
+    const email = document.createElement("p");
+    email.textContent = s.email;
+
+    const botoes = document.createElement("div");
+    botoes.className = "acoes-solicitacao";
+
+    const btnAceitar = document.createElement("button");
+    btnAceitar.type = "button";
+    btnAceitar.className = "btn-aceitar";
+    btnAceitar.textContent = "Aceitar";
+
+    btnAceitar.addEventListener("click", () => {
+        aprovarCadastro(s.id);
+    });
+
+    const btnRecusar = document.createElement("button");
+    btnRecusar.type = "button";
+    btnRecusar.className = "btn-recusar";
+    btnRecusar.textContent = "Recusar";
+
+    btnRecusar.addEventListener("click", () => {
+        rejeitarCadastro(s.id);
+    });
+
+    botoes.append(btnAceitar, btnRecusar);
+    card.append(nome, email, botoes);
+    lista.appendChild(card);
+});
+    } catch {
+
+        msg.textContent = "Falha de conexão.";
+
+    }
+}
+
+async function aprovarCadastro(id) {
+    if (!confirm("Deseja aceitar esta solicitação de cadastro?")) {
+        return;
+    }
+
+    const res = await fetch(
+        `${API}/admin/cadastros/${id}/aprovar`,
+        {
+            method: "POST",
+            credentials: "include"
+        }
+    );
+
+    if (!res.ok) {
+        alert("Não foi possível aceitar a solicitação.");
+        return;
+    }
+
+    await carregarSolicitacoesCadastro();
+}
+
+async function rejeitarCadastro(id) {
+    if (!confirm("Deseja recusar esta solicitação de cadastro?")) {
+        return;
+    }
+
+    const res = await fetch(
+        `${API}/admin/cadastros/${id}/rejeitar`,
+        {
+            method: "POST",
+            credentials: "include"
+        }
+    );
+
+    if (!res.ok) {
+        alert("Não foi possível recusar a solicitação.");
+        return;
+    }
+
+    await carregarSolicitacoesCadastro();
+}
+
 
 // ─── Iniciar ──────────────────────────────────────────────────────────────────
 verificarAuth().then(user => {

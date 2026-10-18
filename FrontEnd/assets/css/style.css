@@ -2026,3 +2026,40 @@ body {
 .card.add-card {
     order: -1;
 }
+
+/* Correção de visibilidade dos botões de solicitação */
+.acoes-solicitacao {
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 12px !important;
+    margin-top: 16px !important;
+}
+
+.acoes-solicitacao .btn-aceitar {
+    background: #16834a !important;
+    background-color: #16834a !important;
+    color: #ffffff !important;
+    border: 1px solid #16834a !important;
+}
+
+.acoes-solicitacao .btn-recusar {
+    background: #c0392b !important;
+    background-color: #c0392b !important;
+    color: #ffffff !important;
+    border: 1px solid #c0392b !important;
+}
+
+.acoes-solicitacao button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 100px !important;
+    min-height: 40px !important;
+    padding: 10px 18px !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    cursor: pointer !important;
+}
