@@ -51,9 +51,62 @@
     </div>
   </div>
 
+  <!-- =========================================================
+       CARD DE SUCESSO (substitui o alert)
+  ========================================================== -->
+  <div id="modal-sucesso" class="modal" style="display:none;">
+    <div class="modal-content">
+
+      <button type="button" class="modal-close" id="btn-fechar-sucesso">×</button>
+
+      <h2>Solicitação enviada</h2>
+
+      <p id="mensagem-sucesso">
+        Solicitação enviada para aprovação.
+      </p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn-confirmar" id="btn-ir-login">
+          Ir para o login
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <script>
   const API = `http://${window.location.hostname || "localhost"}:5227/api`;
 
+  // ─── Card de sucesso ────────────────────────────────────────────────────────
+  const modalSucesso = document.getElementById("modal-sucesso");
+
+  function irParaLogin() {
+    window.location.href = "login.html";
+  }
+
+  function mostrarSucesso(mensagem) {
+    document.getElementById("mensagem-sucesso").textContent =
+      mensagem || "Solicitação enviada para aprovação.";
+
+    modalSucesso.style.display = "flex";
+    document.getElementById("btn-ir-login").focus();
+  }
+
+  // Qualquer jeito de fechar leva para o login
+  document.getElementById("btn-ir-login").addEventListener("click", irParaLogin);
+  document.getElementById("btn-fechar-sucesso").addEventListener("click", irParaLogin);
+
+  modalSucesso.addEventListener("click", (e) => {
+    if (e.target === modalSucesso) irParaLogin();
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && modalSucesso.style.display === "flex") {
+      irParaLogin();
+    }
+  });
+
+  // ─── Cadastro ───────────────────────────────────────────────────────────────
   async function register() {
     const nome = document.getElementById("nome").value.trim();
     const email = document.getElementById("email").value.trim();
@@ -63,6 +116,12 @@
     const btn = document.querySelector(".btn-login");
 
     erro.style.display = "none";
+
+    if (!nome || !email || !senha) {
+      erro.textContent = "Preencha todos os campos.";
+      erro.style.display = "block";
+      return;
+    }
 
     if (senha !== confirm) {
       erro.textContent = "As senhas não coincidem.";
@@ -81,14 +140,10 @@
       });
 
       if (res.ok) {
-  const data = await res.json().catch(() => ({}));
-
-  alert(data.mensagem ||
-    "Solicitação enviada para aprovação.");
-
-  window.location.href = "login.html";
-  return;
-}
+        const data = await res.json().catch(() => ({}));
+        mostrarSucesso(data.mensagem);
+        return;
+      }
 
       const data = await res.json().catch(() => null);
       erro.textContent = data?.[0]?.description || "Erro ao criar conta.";

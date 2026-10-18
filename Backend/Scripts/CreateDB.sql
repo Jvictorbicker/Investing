@@ -1,15 +1,15 @@
 /* =====================================================================
    AtivoApi - Script completo do banco (SQL Server)
-   Ordem: banco -> tabelas -> índices -> trigger -> procedure
+   Ordem: banco -> tabelas -> índices -> trigger -> procedures
    Pode rodar o script inteiro de uma vez (é idempotente nas tabelas).
    ===================================================================== */
 
 -- 0. Banco de dados (ajuste o nome se quiser)
 IF DB_ID(N'InvestifyDB') IS NULL
-    CREATE DATABASE AtivoDb;
+    CREATE DATABASE InvestifyDB;
 GO
 
-USE AtivoDb;
+USE InvestifyDB;
 GO
 
 /* ---------------------------------------------------------------------
@@ -235,6 +235,71 @@ BEGIN
         UPDATE dbo.SolicitacaoCadastro
         SET
             Status          = 'Aprovada',
+            DataAnalise     = SYSUTCDATETIME(),
+            AdministradorId = @AdministradorId
+        WHERE Id = @SolicitacaoId;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+        BEGIN
+            ROLLBACK TRANSACTION;
+        END;
+
+        THROW;
+    END CATCH;
+END;
+GO
+
+/* ---------------------------------------------------------------------
+   8. Procedure para rejeição de cadastro
+   --------------------------------------------------------------------- */
+CREATE OR ALTER PROCEDURE dbo.sp_RejeitarCadastro
+    @SolicitacaoId   INT,
+    @AdministradorId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Confirma que quem rejeita é administrador
+        IF NOT EXISTS (
+            SELECT 1
+            FROM dbo.usuario
+            WHERE Id = @AdministradorId
+              AND IsAdmin = 1
+        )
+        BEGIN
+            THROW 50001, 'Administrador inválido.', 1;
+        END;
+
+        DECLARE @Status NVARCHAR(20);
+
+        -- Busca o status da solicitação (trava a linha)
+        SELECT @Status = Status
+        FROM dbo.SolicitacaoCadastro WITH (UPDLOCK, HOLDLOCK)
+        WHERE Id = @SolicitacaoId;
+
+        -- Verifica se a solicitação existe
+        IF @Status IS NULL
+        BEGIN
+            THROW 50002, 'Solicitação não encontrada.', 1;
+        END;
+
+        -- Verifica se a solicitação ainda está pendente
+        IF @Status <> 'Pendente'
+        BEGIN
+            THROW 50003, 'A solicitação já foi analisada.', 1;
+        END;
+
+        -- Atualiza o status da solicitação (dispara a trigger de auditoria)
+        UPDATE dbo.SolicitacaoCadastro
+        SET
+            Status          = 'Rejeitada',
             DataAnalise     = SYSUTCDATETIME(),
             AdministradorId = @AdministradorId
         WHERE Id = @SolicitacaoId;
