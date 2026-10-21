@@ -1,3 +1,5 @@
+http://localhost:5227/login.html
+
 Server=localhost;Database=master;Trusted_Connection=True;
 
 # Investify
