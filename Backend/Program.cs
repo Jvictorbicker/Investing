@@ -2,6 +2,7 @@ using AtivoApi.Data;
 using AtivoApi.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -108,5 +109,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+var hasher = new PasswordHasher<object>();
+
+string senha = "Jo58fi10@";
+string hash = hasher.HashPassword(null!, senha);
+
+Console.WriteLine($"HASH GERADO: {hash}");
 
 app.Run();
