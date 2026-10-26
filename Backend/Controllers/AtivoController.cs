@@ -34,8 +34,23 @@ public class AtivosController : ControllerBase
         Ok(await _service.ListarAsync(carteiraId, GetUserId()));
 
     [HttpPost("api/carteiras/{carteiraId}/ativos")]
-    public async Task<IActionResult> Criar(long carteiraId, [FromBody] Ativo ativo) =>
-        Ok(await _service.CriarAsync(ativo, carteiraId, GetUserId()));
+public async Task<IActionResult> Criar(long carteiraId, [FromBody] Ativo ativo)
+{
+    try
+    {
+        var resultado = await _service.CriarAsync(
+            ativo,
+            carteiraId,
+            GetUserId()
+        );
+
+        return Ok(resultado);
+    }
+    catch (ArgumentException ex)
+    {
+        return BadRequest(new { mensagem = ex.Message });
+    }
+}
 
     [HttpGet("api/carteiras/{carteiraId}/ativos/comparativo")]
     public async Task<IActionResult> Comparativo(long carteiraId) =>
@@ -54,23 +69,30 @@ public class AtivosController : ControllerBase
     }
 
     [HttpGet("api/ativos/cotacoes")]
-    public async Task<IActionResult> Cotacoes([FromQuery] string tickers)
-    {
-        var resultados = new List<BrapiResponse?>();
-
-        foreach (var ticker in tickers.Split(','))
+    public async Task<IActionResult> Cotacoes([FromQuery] string? tickers)
         {
-            try
-            {
-                var resultado = await _service.BuscarCotacaoAsync(ticker.Trim());
-                resultados.Add(resultado);
-            }
-            catch
-            {
-                // Se um ticker falhar, continua para o próximo
-            }
-        }
+            if (string.IsNullOrWhiteSpace(tickers))
+                return BadRequest(new { mensagem = "Informe ao menos um ticker." });
 
-        return Ok(resultados);
-    }
+            var resultados = new List<BrapiResponse>();
+
+            foreach (var ticker in tickers.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    try
+                        {
+                            var resultado = await _service.BuscarCotacaoAsync(ticker.Trim());
+
+            // Ignora respostas vazias ou inválidas
+                            if (resultado != null)
+                            resultados.Add(resultado);
+                        }
+                        catch (Exception)
+                            {
+            // Ignora a falha deste ticker e continua com os demais
+                             continue;
+                            }
+                }
+
+         return Ok(resultados);
+    }   
 }

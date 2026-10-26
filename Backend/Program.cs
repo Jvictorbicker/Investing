@@ -110,11 +110,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 
+/*
 var hasher = new PasswordHasher<object>();
-
 string senha = "Jo58fi10@";
 string hash = hasher.HashPassword(null!, senha);
-
 Console.WriteLine($"HASH GERADO: {hash}");
+*/
 
 app.Run();

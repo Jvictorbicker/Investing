@@ -52,18 +52,22 @@ public class AtivoService
     // ============================================================
 
     public async Task<BrapiResponse?> BuscarCotacaoAsync(
-        string ticker)
-    {
-        var url =
-            $"https://brapi.dev/api/quote/{ticker}?token={_brapiToken}";
+    string ticker)
+{
+    var tickerSeguro = Uri.EscapeDataString(ticker.Trim());
 
-        var response = await _httpClient.GetAsync(url);
+    var url =
+        $"https://brapi.dev/api/quote/{tickerSeguro}?token={_brapiToken}";
 
-        response.EnsureSuccessStatusCode();
+    using var response = await _httpClient.GetAsync(url);
 
-        return await response.Content
-            .ReadFromJsonAsync<BrapiResponse>();
-    }
+    // A API não encontrou o ticker ou retornou outro erro HTTP
+    if (!response.IsSuccessStatusCode)
+        return null;
+
+    return await response.Content
+        .ReadFromJsonAsync<BrapiResponse>();
+}
 
     // ============================================================
     // LISTAR ATIVOS
@@ -87,36 +91,61 @@ public class AtivoService
     // CRIAR ATIVO
     // ============================================================
 
-    public async Task<Ativo> CriarAsync(
-        Ativo ativo,
-        long carteiraId,
-        int usuarioId)
+public async Task<Ativo> CriarAsync(
+    Ativo ativo,
+    long carteiraId,
+    int usuarioId)
+{
+    // Verifica se a carteira pertence ao usuário
+    await ValidarCarteiraAsync(carteiraId, usuarioId);
+
+    if (string.IsNullOrWhiteSpace(ativo.Ticker))
     {
-        await ValidarCarteiraAsync(
-            carteiraId,
-            usuarioId
+        throw new ArgumentException(
+            "Informe o ticker da ação."
         );
-
-        var cotacao = await BuscarCotacaoAsync(
-            ativo.Ticker
-        );
-
-        ativo.PrecoCompra =
-            cotacao?.Results?
-                .FirstOrDefault()?
-                .RegularMarketPrice ?? 0;
-
-        ativo.CarteiraId = carteiraId;
-
-        // Evita tentar inserir a carteira inteira novamente
-        ativo.Carteira = null;
-
-        _context.Ativos.Add(ativo);
-
-        await _context.SaveChangesAsync();
-
-        return ativo;
     }
+
+    ativo.Ticker = ativo.Ticker.Trim().ToUpperInvariant();
+
+    BrapiResponse? cotacao;
+
+    try
+    {
+        cotacao = await BuscarCotacaoAsync(ativo.Ticker);
+    }
+    catch (HttpRequestException)
+    {
+        throw new ArgumentException(
+            $"Não foi possível consultar o ticker '{ativo.Ticker}' na BRAPI."
+        );
+    }
+    catch (System.Text.Json.JsonException)
+    {
+        throw new ArgumentException(
+            "A BRAPI retornou uma resposta inválida para esse ticker."
+        );
+    }
+
+    // Confere se a BRAPI encontrou resultados
+    if (cotacao?.Results == null ||
+        !cotacao.Results.Any())
+    {
+        throw new ArgumentException(
+            $"O ticker '{ativo.Ticker}' não foi encontrado na BRAPI."
+        );
+    }
+
+    // Vincula o ativo à carteira
+    ativo.CarteiraId = carteiraId;
+
+    // Salva no banco de dados
+    _context.Ativos.Add(ativo);
+    await _context.SaveChangesAsync();
+
+    return ativo;
+}
+
 
     // ============================================================
     // ATUALIZAR ATIVO
