@@ -895,3 +895,6 @@ C:\Users\T-GAMER\OneDrive\Área de Trabalho\Investing\Backend\obj\Debug\net10.0\
 C:\Users\T-GAMER\OneDrive\Área de Trabalho\Investing\Backend\obj\Debug\net10.0\Investing.pdb
 C:\Users\T-GAMER\OneDrive\Área de Trabalho\Investing\Backend\obj\Debug\net10.0\Investing.genruntimeconfig.cache
 C:\Users\T-GAMER\OneDrive\Área de Trabalho\Investing\Backend\obj\Debug\net10.0\ref\Investing.dll
+C:\Users\Jvict\Desktop\Investing\Backend\bin\Debug\net10.0\Swashbuckle.AspNetCore.Swagger.dll
+C:\Users\Jvict\Desktop\Investing\Backend\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerGen.dll
+C:\Users\Jvict\Desktop\Investing\Backend\bin\Debug\net10.0\Swashbuckle.AspNetCore.SwaggerUI.dll
