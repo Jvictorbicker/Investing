@@ -136,6 +136,11 @@ public async Task<Ativo> CriarAsync(
         );
     }
 
+    ativo.PrecoCompra =
+        cotacao?.Results?
+            .FirstOrDefault()?
+            .RegularMarketPrice ?? 0;
+
     // Vincula o ativo à carteira
     ativo.CarteiraId = carteiraId;
 
@@ -173,6 +178,7 @@ public async Task<Ativo> CriarAsync(
 
         ativo.Quantidade = dados.Quantidade;
         ativo.Ticker = dados.Ticker;
+        ativo.PrecoCompra = dados.PrecoCompra;
 
         await _context.SaveChangesAsync();
 
